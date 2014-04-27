@@ -1,0 +1,25 @@
+api_name ||| api_retype ||| api_params ||| api_permission ||| api_type
+Landroid/content/ContentResolver;->query(Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor; ||| Landroid/database/Cursor; ||| Landroid/net/Uri;[Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String; ||| android.permission.READ_CONTACTS ||| 1
+Landroid/provider/CallLog$Calls;->getLastOutgoingCall(Landroid/content/Context;)Ljava/lang/String; ||| Ljava/lang/String; ||| Landroid/content/Context; ||| android.permission.READ_CONTACTS ||| 1
+Landroid/provider/Telephony$Mms;->query(Landroid/content/ContentResolver;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor; ||| Landroid/database/Cursor; ||| Landroid/content/ContentResolver;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String; ||| android.permission.READ_SMS ||| 1
+Landroid/provider/Telephony$Mms;->query(Landroid/content/ContentResolver;[Ljava/lang/String;)Landroid/database/Cursor; ||| Landroid/database/Cursor; ||| Landroid/content/ContentResolver;[Ljava/lang/String; ||| android.permission.READ_SMS ||| 1
+Landroid/provider/Telephony$Sms;->query(Landroid/content/ContentResolver;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Landroid/database/Cursor; ||| Landroid/database/Cursor; ||| Landroid/content/ContentResolver;[Ljava/lang/String;Ljava/lang/String;Ljava/lang/String; ||| android.permission.READ_SMS ||| 1
+Landroid/provider/Telephony$Sms;->query(Landroid/content/ContentResolver;[Ljava/lang/String;)Landroid/database/Cursor; ||| Landroid/database/Cursor; ||| query(Landroid/content/ContentResolver;[Ljava/lang/String; ||| android.permission.READ_SMS ||| 1
+Landroid/telephony/TelephonyManager;->getDeviceId()Ljava/lang/String; ||| Ljava/lang/String; ||| |||  android.permission.READ_PHONE_STATE ||| 1
+Landroid/telephony/TelephonyManager;->getDeviceSoftwareVersion()Ljava/lang/String; ||| Ljava/lang/String; ||| ||| android.permission.READ_PHONE_STATE ||| 1
+Landroid/telephony/TelephonyManager;->getLine1Number()Ljava/lang/String; ||| Ljava/lang/String; ||| ||| android.permission.READ_PHONE_STATE ||| 1
+Landroid/telephony/TelephonyManager;->getSimSerialNumber()Ljava/lang/String; ||| Ljava/lang/String; ||| ||| android.permission.READ_PHONE_STATE ||| 1
+Landroid/telephony/TelephonyManager;->getSubscriberId()Ljava/lang/String; ||| Ljava/lang/String; ||| |||  android.permission.READ_PHONE_STATE ||| 1
+Landroid/telephony/TelephonyManager;->getVoiceMailNumber()Ljava/lang/String; ||| Ljava/lang/String; ||| ||| android.permission.READ_PHONE_STATE ||| 1
+Landroid/location/LocationManager;->getLastKnownLocation(Ljava/lang/String;)Landroid/location/Location; ||| Landroid/location/Location; ||| Ljava/lang/String; ||| android.permission.ACCESS_FINE_LOCATION ||| 1
+Landroid/location/LocationManager;->getLastKnownLocation(Ljava/lang/String;)Landroid/location/Location; ||| Landroid/location/Location; ||| Ljava/lang/String; ||| android.permission.ACCESS_COARSE_LOCATION ||| 1
+Landroid/telephony/TelephonyManager;->getCellLocation()Landroid/telephony/CellLocation; ||| Landroid/telephony/CellLocation; ||| ||| android.permission.ACCESS_FINE_LOCATION ||| 1
+Landroid/telephony/TelephonyManager;->getCellLocation()Landroid/telephony/CellLocation; ||| Landroid/telephony/CellLocation; ||| ||| android.permission.ACCESS_COARSE_LOCATION ||| 1
+Lcom/android/http/multipart/FilePart;->sendData(Ljava/io/OutputStream;)V ||| V ||| Ljava/io/OutputStream; |||  android.permission.INTERNET ||| 2
+Lcom/android/http/multipart/StringPart;->sendData(Ljava/io/OutputStream;)V ||| V ||| Ljava/io/OutputStream; |||  android.permission.INTERNET ||| 2
+Lcom/android/http/multipart/Part;->send(Ljava/io/OutputStream;)V ||| V ||| Ljava/io/OutputStream; ||| android.permission.INTERNET ||| 2
+Lcom/android/http/multipart/Part;->sendParts(Ljava/io/OutputStream;[Lcom/android/http/multipart/Part;)V ||| V ||| Lcom/android/http/multipart/Part; ||| android.permission.INTERNET ||| 2
+Lcom/android/http/multipart/Part;->sendParts(Ljava/io/OutputStream;[Lcom/android/http/multipart/Part;[B)V ||| V ||| Lcom/android/http/multipart/Part;[B ||| android.permission.INTERNET ||| 2
+Landroid/telephony/SmsManager;->sendDataMessage(Ljava/lang/String;Ljava/lang/String;S[Blandroid/app/PendingIntent;Landroid/app/PendingIntent;)V ||| V ||| Ljava/lang/String;Ljava/lang/String;S[Blandroid/app/PendingIntent;Landroid/app/PendingIntent; |||  android.permission.SEND_SMS ||| 2
+Landroid/telephony/SmsManager;->sendMultipartTextMessage(Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;Ljava/util/ArrayList;Ljava/util/ArrayList;)V ||| V ||| Ljava/lang/String;Ljava/lang/String;Ljava/util/ArrayList;Ljava/util/ArrayList;Ljava/util/ArrayList; ||| android.permission.SEND_SMS ||| 2
+Landroid/telephony/SmsManager;->sendTextMessage(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/app/PendingIntent;Landroid/app/PendingIntent;)V ||| V ||| Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Landroid/app/PendingIntent;Landroid/app/PendingIntent; ||| android.permission.SEND_SMS ||| 2

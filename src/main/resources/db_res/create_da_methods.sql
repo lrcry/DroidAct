@@ -1,0 +1,20 @@
+CREATE TABLE da_methods (
+mtd_id INT(8) NOT NULL AUTO_INCREMENT PRIMARY KEY UNIQUE KEY,
+mtd_name VARCHAR(255),
+mtd_superclass TEXT,
+mtd_interface TEXT,
+mtd_retype TEXT,
+mtd_params TEXT,
+mtd_body TEXT,
+mtd_isnative BOOLEAN,
+mtd_isabstract BOOLEAN,
+mtd_create_at DATETIME,
+mtd_src_apk_name TEXT,
+mtd_src_apk_crc32 char(8),
+mtd_src_apk_md5 char(16),
+mtd_src_apk_sha1 char(20),
+INDEX(mtd_name),
+INDEX(mtd_src_apk_crc32),
+INDEX(mtd_src_apk_md5),
+INDEX(mtd_src_apk_sha1)
+)
