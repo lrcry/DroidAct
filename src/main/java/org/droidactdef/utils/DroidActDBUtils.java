@@ -6,6 +6,7 @@ import java.sql.*;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.io.FileUtils;
 import org.droidactdef.commons.C;
@@ -46,6 +47,13 @@ public class DroidActDBUtils {
 	}
 
 	/*
+	 * ==========================================================================
+	 * ===
+	 * ======================================================================
+	 * =======
+	 * ==================================================================
+	 * ===========
+	 * ==============================================================
 	 * ============= Read from database =============
 	 */
 
@@ -86,6 +94,92 @@ public class DroidActDBUtils {
 		return apis;
 	}
 
+	public static Map<String, List<String>> getAllMethodsBodies(
+			Connection conn, String crc32, String md5) throws SQLException {
+		Map<String, List<String>> mtdsBodies = new HashMap<>();
+
+		String sql = sqlBuilder("select", "da_methods", "mtd_name, mtd_body",
+				2, "where mtd_src_apk_crc32='" + crc32
+						+ "' and mtd_src_apk_md5='" + md5 + "'");
+		QueryRunner runner = new QueryRunner();
+		List<Object[]> results = runner
+				.query(conn, sql, new ArrayListHandler());
+
+		for (Object[] result : results) {
+			if (result != null && result.length == 2) {
+				String name = (String) result[0];
+				String bodyStr = (String) result[1];
+				if (name != null && bodyStr != null) {
+					List<String> body = new ArrayList<>();
+					String[] bodyArr = bodyStr.split(C.CRLF);
+					if (bodyArr != null && bodyArr.length > 0) {
+						for (int i = 0; i < bodyArr.length; i++) {
+							body.add(bodyArr[i]);
+						}
+					}
+
+					if (mtdsBodies.containsKey(name)) {
+						List<String> valist = mtdsBodies.get(name);
+						valist.addAll(body);
+						mtdsBodies.put(name, valist);
+					} else {
+						mtdsBodies.put(name, body);
+					}
+				}
+			}
+		}
+
+		return mtdsBodies;
+	}
+
+	/**
+	 * 根据某个方法名称获取方法体，供控制流分析<br />
+	 * 
+	 * @param conn
+	 * @param mtdName
+	 * @param crc32
+	 * @param md5
+	 * @return
+	 * @throws SQLException
+	 */
+	public static List<String> getBodyByMethodName(Connection conn,
+			String mtdName, String crc32, String md5) throws SQLException {
+		String sql = sqlBuilder("select", "da_methods", "mtd_body", 1,
+				"where mtd_name='" + mtdName + "' and mtd_src_apk_crc32='"
+						+ crc32 + "' and mtd_src_apk_md5='" + md5);
+		QueryRunner runner = new QueryRunner();
+		List<Object[]> body = runner.query(conn, sql, new ArrayListHandler());
+
+		List<String> bodyLines = convertObjListToStrList(body, 0);
+
+		return bodyLines;
+	}
+
+	/**
+	 * 获得某个apk所有方法名称<br />
+	 * 
+	 * @param conn
+	 * @param crc32
+	 * @param md5
+	 * @return
+	 * @throws SQLException
+	 */
+	public static List<Object[]> getMethodsNames(Connection conn, String crc32,
+			String md5) throws SQLException {
+		String sql = sqlBuilder("select", "da_methods", "distinct mtd_name", 1,
+				"where mtd_src_apk_crc32='" + crc32 + "' and mtd_src_apk_md5='"
+						+ md5 + "'", crc32, md5);
+
+		QueryRunner runner = new QueryRunner();
+		List<Object[]> names = runner.query(conn, sql, new ArrayListHandler());
+
+		for (Object[] name : names) {
+			System.out.println(name[0]);
+		}
+
+		return names;
+	}
+
 	/**
 	 * 从某APK反编译的代码中提取某些方法名的方法<br />
 	 * <code>select * <br />
@@ -105,8 +199,9 @@ public class DroidActDBUtils {
 	 * @return 方法详细
 	 * @throws SQLException
 	 */
-	public static List<Object[]> getMethodByName(Connection conn, String crc32,
-			String md5, List<String> mtdNames) throws SQLException {
+	public static List<Object[]> getMethodsByName(Connection conn,
+			String crc32, String md5, List<Object[]> mtdNames)
+			throws SQLException {
 		List<Object[]> methods = new ArrayList<>();
 		Object[] mtdNamesArr = mtdNames.toArray();
 		StringBuilder sbWhere = new StringBuilder("where mtd_src_apk_crc32='"
@@ -171,6 +266,13 @@ public class DroidActDBUtils {
 	}
 
 	/*
+	 * ==========================================================================
+	 * ===
+	 * ======================================================================
+	 * =======
+	 * ==================================================================
+	 * ===========
+	 * ==============================================================
 	 * ============= Modify database =============
 	 */
 	/**
@@ -351,7 +453,14 @@ public class DroidActDBUtils {
 	}
 
 	/*
-	 * ============= General =============
+	 * ==========================================================================
+	 * ===
+	 * ======================================================================
+	 * =======
+	 * ==================================================================
+	 * ===========
+	 * ==============================================================
+	 * =============== ============= General =============
 	 */
 	/**
 	 * 将List转换为Object[][]，为了使用DbUtils的批量操作batch<br />
@@ -486,5 +595,25 @@ public class DroidActDBUtils {
 		sb.append(strs.get(max));
 		System.out.println(sb.toString());
 		return sb.toString();
+	}
+
+	/**
+	 * 将Object[]型的List转换为String型的List,只用于转换查询结果<br />
+	 * 
+	 * @param objList
+	 * @param index
+	 *            转换数组的第几列
+	 * @return
+	 */
+	public static List<String> convertObjListToStrList(List<Object[]> objList,
+			int index) {
+		List<String> strList = new ArrayList<>();
+		for (Object[] obj : objList) {
+			if (obj != null && obj[index] != null) {
+				strList.add((String) obj[index]);
+			}
+		}
+
+		return strList;
 	}
 }

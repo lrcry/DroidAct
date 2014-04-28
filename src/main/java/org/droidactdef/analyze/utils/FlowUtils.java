@@ -36,12 +36,17 @@ public class FlowUtils {
 	@SuppressWarnings("unchecked")
 	public static Map<Integer, CFNode> getControlFlow(List<BasicBlock> bbs)
 			throws Exception {
+//		System.out.println("This is getControFlow executing");
 		Map<Integer, CFNode> cfMap = new HashMap<>();
 //		List<CFNode> cf = new ArrayList<>();
 
 		Map<Object, Object> idMap = new HashMap<>(); // 跳转表<当前ID,跳转至>
 		Map<String, Integer> jmpLbMap = getJmpLabelMap(bbs); // 跳转标记表<标号,块ID>
-
+		
+//		for (Map.Entry<String, Integer> entry : jmpLbMap.entrySet()) {
+//			System.out.println(entry.getKey());
+//		}
+//System.out.println("==============");
 		// System.out.println(jmpLbMap);
 		List<BasicBlock> bbJmpLb = new ArrayList<>();
 //		List<CFNode> jmpLbNodes = new ArrayList<>();
@@ -62,7 +67,7 @@ public class FlowUtils {
 			if (bb.isJump()) {
 				String jump = bb.getBlockBody().get(0);
 				String jmpLb = bb.getJmpLabel();
-				// System.out.println(jmpLb);
+//				 System.out.println(jmpLb);
 				int jmpTo = -1;
 				if (lineIsCondJump(jump)) { // if if-jump
 					jmpTo = jmpLbMap.get(jmpLb);
@@ -89,8 +94,8 @@ public class FlowUtils {
 //					cf.add(node);
 					idMap.put(curBbId, jmpTo);
 				} else { // if packed-switch
-					System.out.println("is this packed switch?"
-							+ bb.getBlockBody().get(0));
+//					System.out.println("is this packed switch?"
+//							+ bb.getBlockBody().get(0));
 					// pswitchStart = curBbId;
 					List<Integer> prev = new ArrayList<>();
 					prev.add(curBbId - 1);
@@ -109,9 +114,9 @@ public class FlowUtils {
 				bbJmpLb.add(bb);
 			} else { // 顺序执行
 				// throw new Exception("??????????????????????");
-				System.out
-						.println("============= sequence or root node ==============="
-								+ bb.getBlockId());
+//				System.out
+//						.println("============= sequence or root node ==============="
+//								+ bb.getBlockId());
 				List<Integer> prev = new ArrayList<>();
 				prev.add(curBbId - 1);
 				List<Integer> next = new ArrayList<>();
@@ -182,6 +187,7 @@ public class FlowUtils {
 			List<String> body = bb.getBlockBody();
 			for (String line : body) {
 				if (lineIsJmpLabel(line)) {
+//					System.out.println("getjmplabelmap = " + line);
 					jlMap.put(line, bbId);
 				}
 
@@ -502,11 +508,21 @@ public class FlowUtils {
 	 * 
 	 * @param lines
 	 */
-	public static void removeBlankLines(List<String> lines) {
+	public static List<String> removeBlankLines(List<String> lines) {
 		List<String> removedLines = new ArrayList<>();
 		removedLines.add("");
 		removedLines.add(C.CRLF);
 		lines.removeAll(removedLines);
+		
+		List<String> linesNew = new ArrayList<>();
+		for (String line : lines) {
+			line = line.trim();
+//			System.out.println("-----------removeblanklines---------");
+//			System.out.println(line);
+			linesNew.add(line);
+		}
+
+		return linesNew;
 	}
 
 	/**
@@ -577,7 +593,7 @@ public class FlowUtils {
 			}
 		}
 
-		System.out.println(keys.toString());
+//		System.out.println(keys.toString());
 
 		return keys;
 	}
