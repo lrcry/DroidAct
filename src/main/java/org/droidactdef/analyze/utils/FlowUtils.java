@@ -34,16 +34,18 @@ public class FlowUtils {
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static List<CFNode> getControlFlow(List<BasicBlock> bbs)
+	public static Map<Integer, CFNode> getControlFlow(List<BasicBlock> bbs)
 			throws Exception {
-		List<CFNode> cf = new ArrayList<>();
+		Map<Integer, CFNode> cfMap = new HashMap<>();
+//		List<CFNode> cf = new ArrayList<>();
 
 		Map<Object, Object> idMap = new HashMap<>(); // 跳转表<当前ID,跳转至>
 		Map<String, Integer> jmpLbMap = getJmpLabelMap(bbs); // 跳转标记表<标号,块ID>
 
 		// System.out.println(jmpLbMap);
 		List<BasicBlock> bbJmpLb = new ArrayList<>();
-		List<CFNode> jmpLbNodes = new ArrayList<>();
+//		List<CFNode> jmpLbNodes = new ArrayList<>();
+		Map<Integer, CFNode> jmpLbNodesMap = new HashMap<>();
 
 		Map<Object, Object> pswitchMap = new HashMap<>(); // 跳转头尾表<pswitch分支,
 															// pswitch起始>
@@ -72,7 +74,8 @@ public class FlowUtils {
 					next.add(jmpTo);
 
 					CFNode node = setCFNodeValue(curBbId, prev, next, bb);
-					cf.add(node);
+					cfMap.put(curBbId, node);
+//					cf.add(node);
 					idMap.put(curBbId, jmpTo);
 				} else if (lineIsGotoJump(jump)) { // if goto-jump
 					jmpTo = jmpLbMap.get(jmpLb);
@@ -82,7 +85,8 @@ public class FlowUtils {
 					List<Integer> next = new ArrayList<>();
 					next.add(jmpTo);
 					CFNode node = setCFNodeValue(curBbId, prev, next, bb);
-					cf.add(node);
+					cfMap.put(curBbId, node);
+//					cf.add(node);
 					idMap.put(curBbId, jmpTo);
 				} else { // if packed-switch
 					System.out.println("is this packed switch?"
@@ -98,7 +102,8 @@ public class FlowUtils {
 					}
 
 					CFNode node = setCFNodeValue(curBbId, prev, next, bb);
-					cf.add(node);
+					cfMap.put(curBbId, node);
+//					cf.add(node);
 				}
 			} else if (isBbJmpLabel(bb)) { // 加入到jmpLbNodes，等到全部完成之后，通过idMap反推
 				bbJmpLb.add(bb);
@@ -111,7 +116,9 @@ public class FlowUtils {
 				prev.add(curBbId - 1);
 				List<Integer> next = new ArrayList<>();
 				next.add(curBbId + 1);
-				cf.add(setCFNodeValue(curBbId, prev, next, bb));
+				CFNode node = setCFNodeValue(curBbId, prev, next, bb);
+//				cf.add(setCFNodeValue(curBbId, prev, next, bb));
+				cfMap.put(curBbId, node);
 			}
 		}
 
@@ -134,14 +141,16 @@ public class FlowUtils {
 				prev.addAll((List<Integer>) getKeyByValueFromMap(idMap, bbId));
 				next.add(bbId + 1);
 				CFNode node = setCFNodeValue(bbId, prev, next, bb);
-				jmpLbNodes.add(node);
-
+//				jmpLbNodes.add(node);
+				jmpLbNodesMap.put(bbId, node);
 			}
 
-			cf.addAll(jmpLbNodes);
+//			cf.addAll(jmpLbNodes);
+			cfMap.putAll(jmpLbNodesMap);
 		}
 
-		return cf;
+//		return cf;
+		return cfMap;
 	}
 
 	/**
