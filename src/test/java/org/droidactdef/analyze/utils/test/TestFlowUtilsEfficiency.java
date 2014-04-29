@@ -48,7 +48,7 @@ public class TestFlowUtilsEfficiency {
 				// }
 				List<BasicBlock> bbs = FlowUtils.getBasicBlockPartition(
 						bodyNew, name);
-				Map<Integer, CFNode> cf = FlowUtils.getControlFlow(bbs);
+				Map<Integer, CFNode> cf = FlowUtils.getControlFlowGraph(bbs);
 				// mtds.remove(name);
 				// System.out.println("Now sleep: 2000ms");
 				// Thread.sleep(2000);
@@ -88,7 +88,7 @@ public class TestFlowUtilsEfficiency {
 				cfList.add("=======++=======++=======++=======++=======");
 			}
 			
-			FileUtils.writeLines(new File("cfresult.txt"), "UTF-8", cfList, null, false);
+//			FileUtils.writeLines(new File("cfresult.txt"), "UTF-8", cfList, null, false);
 		}
 	}
 }

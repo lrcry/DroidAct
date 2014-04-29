@@ -37,18 +37,22 @@ public class C {
 	public static final String PTN_METHOD_INVOKE = "invoke-[a-z\\/]*";
 	public static final String PTN_METHOD_REGS = "\\{" + PTN_REGS + "\\}";
 
-	public static final String PTN_IF = "if-[a-z]* " + PTN_REGS
-			+ ", " + PTN_IF_COND; // if-nez v1, :cond_0
+	public static final String PTN_IF = "if-[a-z]* " + PTN_REGS + ", "
+			+ PTN_IF_COND; // if-nez v1, :cond_0
 	public static final String PTN_IF_IF = "if-[a-z]*";
 
 	public static final String PTN_GOTO = "goto " + PTN_GOTO_LABEL; // goto
 																	// :goto_0
 	public static final String PTN_GOTO_16 = "goto/16 " + PTN_GOTO_LABEL; // goto/16
 																			// :goto_0
-	
+
 	public static final String PTN_PSWITCH_LABEL = ":pswitch_[0-9a-z]";
 	public static final String PTN_PSWITCH_DATA = ":pswitch_data_[0-9a-z]";
 	public static final String PTN_PSWITCH_START = "packed-switch [vp][0-9a-z], :pswitch_data_[0-9a-z]";
+
+	public static final String PTN_RETURN = "return [pv][0-9a-z]"; // matches
+	public static final String PTN_RETURN_VOID = "return-void"; // matches
+	public static final String PTN_RETURN_OBJECT = "return-object"; // find
 
 	/*
 	 * 
@@ -102,7 +106,7 @@ public class C {
 
 	public static final String FHEADER_NAME = "Field name: ";
 	public static final String FHEADER_TYPE = "Field type: ";
-	
+
 	public static final String PSWITCH_DATA_START = "pswitch_data";
 	public static final String PSWITCH_DATA_END = ".end packed-switch";
 }

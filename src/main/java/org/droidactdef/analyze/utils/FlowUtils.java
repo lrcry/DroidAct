@@ -25,31 +25,60 @@ public class FlowUtils {
 	 * 控制流获取
 	 */
 	/**
+	 * 整理CF将CF的终点的后继节点修改为-1<br />
+	 * 
+	 * @param cfOriginal
+	 *            没有进行终点化处理的cf
+	 * @return 将终点处理的cf
+	 */
+	public static Map<Integer, CFNode> getControlFlowGraphWithReturn(
+			Map<Integer, CFNode> cfOriginal) {
+		int idReturn = -1;
+		CFNode nodeReturn = null;
+		for (Map.Entry<Integer, CFNode> entry : cfOriginal.entrySet()) {
+			int curId = entry.getKey();
+			CFNode node = entry.getValue();
+			if (isBbReturn(node.getBb())) {
+				idReturn = curId;
+				List<Integer> next = new ArrayList<>();
+				next.add(-1);
+				node.setNext(next);
+				nodeReturn = node;
+				break;
+			}
+		}
+		
+		cfOriginal.put(idReturn, nodeReturn);
+		return cfOriginal;
+	}
+
+	/**
 	 * 获取一个方法的控制流<br />
 	 * 可能投机取巧的做法：没有足够的调研就判定每个smali方法中只有一个switch片段<br />
 	 * 已修改为：将pswitch起点标号存入一个map中<br />
+	 * 通过另一方法<code>getControlFlowGraphWithReturn</code>来获取带终点的控制流<br />
 	 * 
 	 * @param bbs
 	 * @return
 	 * @throws Exception
 	 */
 	@SuppressWarnings("unchecked")
-	public static Map<Integer, CFNode> getControlFlow(List<BasicBlock> bbs)
+	public static Map<Integer, CFNode> getControlFlowGraph(List<BasicBlock> bbs)
 			throws Exception {
-//		System.out.println("This is getControFlow executing");
+		// System.out.println("This is getControFlow executing");
 		Map<Integer, CFNode> cfMap = new HashMap<>();
-//		List<CFNode> cf = new ArrayList<>();
+		// List<CFNode> cf = new ArrayList<>();
 
 		Map<Object, Object> idMap = new HashMap<>(); // 跳转表<当前ID,跳转至>
 		Map<String, Integer> jmpLbMap = getJmpLabelMap(bbs); // 跳转标记表<标号,块ID>
-		
-//		for (Map.Entry<String, Integer> entry : jmpLbMap.entrySet()) {
-//			System.out.println(entry.getKey());
-//		}
-//System.out.println("==============");
+
+		// for (Map.Entry<String, Integer> entry : jmpLbMap.entrySet()) {
+		// System.out.println(entry.getKey());
+		// }
+		// System.out.println("==============");
 		// System.out.println(jmpLbMap);
 		List<BasicBlock> bbJmpLb = new ArrayList<>();
-//		List<CFNode> jmpLbNodes = new ArrayList<>();
+		// List<CFNode> jmpLbNodes = new ArrayList<>();
 		Map<Integer, CFNode> jmpLbNodesMap = new HashMap<>();
 
 		Map<Object, Object> pswitchMap = new HashMap<>(); // 跳转头尾表<pswitch分支,
@@ -67,7 +96,7 @@ public class FlowUtils {
 			if (bb.isJump()) {
 				String jump = bb.getBlockBody().get(0);
 				String jmpLb = bb.getJmpLabel();
-//				 System.out.println(jmpLb);
+				// System.out.println(jmpLb);
 				int jmpTo = -1;
 				if (lineIsCondJump(jump)) { // if if-jump
 					jmpTo = jmpLbMap.get(jmpLb);
@@ -80,7 +109,7 @@ public class FlowUtils {
 
 					CFNode node = setCFNodeValue(curBbId, prev, next, bb);
 					cfMap.put(curBbId, node);
-//					cf.add(node);
+					// cf.add(node);
 					idMap.put(curBbId, jmpTo);
 				} else if (lineIsGotoJump(jump)) { // if goto-jump
 					jmpTo = jmpLbMap.get(jmpLb);
@@ -91,11 +120,11 @@ public class FlowUtils {
 					next.add(jmpTo);
 					CFNode node = setCFNodeValue(curBbId, prev, next, bb);
 					cfMap.put(curBbId, node);
-//					cf.add(node);
+					// cf.add(node);
 					idMap.put(curBbId, jmpTo);
 				} else { // if packed-switch
-//					System.out.println("is this packed switch?"
-//							+ bb.getBlockBody().get(0));
+					// System.out.println("is this packed switch?"
+					// + bb.getBlockBody().get(0));
 					// pswitchStart = curBbId;
 					List<Integer> prev = new ArrayList<>();
 					prev.add(curBbId - 1);
@@ -108,24 +137,21 @@ public class FlowUtils {
 
 					CFNode node = setCFNodeValue(curBbId, prev, next, bb);
 					cfMap.put(curBbId, node);
-//					cf.add(node);
+					// cf.add(node);
 				}
 			} else if (isBbJmpLabel(bb)) { // 加入到jmpLbNodes，等到全部完成之后，通过idMap反推
 				bbJmpLb.add(bb);
 			} else { // 顺序执行
-				// throw new Exception("??????????????????????");
-//				System.out
-//						.println("============= sequence or root node ==============="
-//								+ bb.getBlockId());
+
 				List<Integer> prev = new ArrayList<>();
 				prev.add(curBbId - 1);
 				List<Integer> next = new ArrayList<>();
 				next.add(curBbId + 1);
 				CFNode node = setCFNodeValue(curBbId, prev, next, bb);
-//				cf.add(setCFNodeValue(curBbId, prev, next, bb));
+				// cf.add(setCFNodeValue(curBbId, prev, next, bb));
 				cfMap.put(curBbId, node);
 			}
-		}
+		} // 终点从外面考虑
 
 		// 反推,这里都是跳转标号的块
 		if (idMap.size() > 0) {
@@ -146,16 +172,32 @@ public class FlowUtils {
 				prev.addAll((List<Integer>) getKeyByValueFromMap(idMap, bbId));
 				next.add(bbId + 1);
 				CFNode node = setCFNodeValue(bbId, prev, next, bb);
-//				jmpLbNodes.add(node);
+				// jmpLbNodes.add(node);
 				jmpLbNodesMap.put(bbId, node);
 			}
 
-//			cf.addAll(jmpLbNodes);
+			// cf.addAll(jmpLbNodes);
 			cfMap.putAll(jmpLbNodesMap);
 		}
 
-//		return cf;
+		// return cf;
 		return cfMap;
+	}
+
+	/**
+	 * 判断基本块是否为终点<br />
+	 * 
+	 * @param bb
+	 * @return
+	 */
+	private static boolean isBbReturn(BasicBlock bb) {
+		List<String> body = bb.getBlockBody();
+		for (String line : body) {
+			if (lineIsReturn(line))
+				return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -187,7 +229,7 @@ public class FlowUtils {
 			List<String> body = bb.getBlockBody();
 			for (String line : body) {
 				if (lineIsJmpLabel(line)) {
-//					System.out.println("getjmplabelmap = " + line);
+					// System.out.println("getjmplabelmap = " + line);
 					jlMap.put(line, bbId);
 				}
 
@@ -333,6 +375,61 @@ public class FlowUtils {
 		bb.setCurLineNumber(curLineNum);
 		bb.setBlockBody(blockBody);
 		return bb;
+	}
+
+	/*
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * 判断当前行是否是终点
+	 */
+	/**
+	 * 判断当前行是否是return语句<br />
+	 * 
+	 * @param line
+	 * @return
+	 */
+	public static boolean lineIsReturn(String line) {
+		return lineIsReturnReg(line) || lineIsReturnObject(line)
+				|| lineIsReturnVoid(line);
+	}
+
+	/**
+	 * 判断是否是return vx<br />
+	 * 
+	 * @param line
+	 * @return
+	 */
+	private static boolean lineIsReturnReg(String line) {
+		return matchStringFromLineByRegex(line, C.PTN_RETURN);
+	}
+
+	/**
+	 * 判断是否是return-void<br />
+	 * 
+	 * @param line
+	 * @return
+	 */
+	private static boolean lineIsReturnVoid(String line) {
+		return matchStringFromLineByRegex(line, C.PTN_RETURN_VOID);
+	}
+
+	/**
+	 * 判断是否是return-object<br />
+	 * 
+	 * @param line
+	 * @return
+	 */
+	private static boolean lineIsReturnObject(String line) {
+		String str = findStringFromLineByRegex(line, C.PTN_RETURN_OBJECT);
+		
+		if (str != null && !str.equals("")) 
+			return true;
+		else 
+			return false;
 	}
 
 	/*
@@ -513,12 +610,12 @@ public class FlowUtils {
 		removedLines.add("");
 		removedLines.add(C.CRLF);
 		lines.removeAll(removedLines);
-		
+
 		List<String> linesNew = new ArrayList<>();
 		for (String line : lines) {
 			line = line.trim();
-//			System.out.println("-----------removeblanklines---------");
-//			System.out.println(line);
+			// System.out.println("-----------removeblanklines---------");
+			// System.out.println(line);
 			linesNew.add(line);
 		}
 
@@ -593,7 +690,7 @@ public class FlowUtils {
 			}
 		}
 
-//		System.out.println(keys.toString());
+		// System.out.println(keys.toString());
 
 		return keys;
 	}

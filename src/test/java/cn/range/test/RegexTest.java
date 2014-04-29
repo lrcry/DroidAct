@@ -22,7 +22,8 @@ public class RegexTest {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		
+		String str = "return-void";
+		System.out.println(FlowUtils.lineIsReturn(str));
 		
 		/*
 		List<String> lines = FileUtils.readLines(new File("cfTest_circulation.smali"), "UTF-8");
