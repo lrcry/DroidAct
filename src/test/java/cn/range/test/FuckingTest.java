@@ -21,7 +21,7 @@ public class FuckingTest {
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
-		List<String> lines = FileUtils.readLines(new File("cfTest_circulation.smali"), "UTF-8");
+		List<String> lines = FileUtils.readLines(new File("cfTest_complexTryCatch.smali"), "UTF-8");
 		List<String> trimedLines = new ArrayList<>();
 		for (String line : lines) {
 			trimedLines.add(line.trim());
@@ -31,6 +31,10 @@ public class FuckingTest {
 		
 		// 获取基本块划分
 		List<BasicBlock> bbs = FlowUtils.getBasicBlockPartition(trimedLines, "lovewhatwhat");
+		for (BasicBlock bb : bbs) {
+			System.out.println(bb.toString());
+		}
+		Thread.sleep(5000);
 		
 		// 获取控制流图
 		Map<Integer, CFNode> cf = FlowUtils.getControlFlowGraph(bbs);
@@ -46,7 +50,7 @@ public class FuckingTest {
 		}
 		
 		// Why don't try adjacent matrix?
-		/*
+		/**/
 		int[][] adjMx = new int[cf.size()][cf.size()];
 		for (int i = 0; i < cf.size(); i++) {
 			CFNode node = cf.get(i);
@@ -60,7 +64,8 @@ public class FuckingTest {
 				}
 			
 			for (int nextInt : next) {
-				adjMx[id][nextInt] = 1;
+				if (nextInt != -1)
+					adjMx[id][nextInt] = 1;
 			}
 		}
 		
@@ -69,7 +74,7 @@ public class FuckingTest {
 				System.out.print(adjMx[i][j] + " ");
 			}
 			System.out.println();
-		}*/
+		}
 	}
 
 }

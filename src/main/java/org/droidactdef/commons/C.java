@@ -28,31 +28,47 @@ public class C {
 	 * 
 	 * 正则表达式
 	 */
+	// Registers
 	private static final String PTN_REG = "[vp][0-9]*";
 	private static final String PTN_REGS = "[" + PTN_REG + ", ]*" + PTN_REG;
-	public static final String PTN_GOTO_LABEL = ":goto_[0-9a-z]"; // goto标号
-	public static final String PTN_IF_COND = ":cond_[0-9a-z]";
-
+	
+	// Method invocation
 	public static final String PTN_METHOD = "[a-zA-Z0-9_/$]*;->[a-zA-Z0-9<>_/$]*\\([a-zA-Z0-9_/$;\\[]*\\)[a-zA-Z0-9_/$;]*";
 	public static final String PTN_METHOD_INVOKE = "invoke-[a-z\\/]*";
 	public static final String PTN_METHOD_REGS = "\\{" + PTN_REGS + "\\}";
-
+	public static final String PTN_CLAZZ = "L[a-zA-Z0-9_/$]*;";
+	
+	// Jumping
+	public static final String PTN_GOTO_LABEL = ":goto_[0-9a-z]"; // goto标号
+	public static final String PTN_IF_COND = ":cond_[0-9a-z]";
 	public static final String PTN_IF = "if-[a-z]* " + PTN_REGS + ", "
 			+ PTN_IF_COND; // if-nez v1, :cond_0
 	public static final String PTN_IF_IF = "if-[a-z]*";
-
 	public static final String PTN_GOTO = "goto " + PTN_GOTO_LABEL; // goto
 																	// :goto_0
 	public static final String PTN_GOTO_16 = "goto/16 " + PTN_GOTO_LABEL; // goto/16
 																			// :goto_0
-
+	// Switch jumping
 	public static final String PTN_PSWITCH_LABEL = ":pswitch_[0-9a-z]";
 	public static final String PTN_PSWITCH_DATA = ":pswitch_data_[0-9a-z]";
 	public static final String PTN_PSWITCH_START = "packed-switch [vp][0-9a-z], :pswitch_data_[0-9a-z]";
 
+	// Returning
 	public static final String PTN_RETURN = "return [pv][0-9a-z]"; // matches
 	public static final String PTN_RETURN_VOID = "return-void"; // matches
 	public static final String PTN_RETURN_OBJECT = "return-object"; // find
+
+	// Try and catch
+	public static final String PTN_CATCH_LABEL = ":catch_[0-9a-z]";
+	public static final String PTN_CATCHALL_LABEL = ":catchall_[0-9a-z]";
+	public static final String PTN_TRY_START = ":try_start_[0-9a-z]";
+	public static final String PTN_TRY_END = ":try_end_[0-9a-z]";
+	public static final String PTN_TRY_CATCH_CATCH = ".catch " + PTN_CLAZZ + " \\{"
+			+ PTN_TRY_START + " \\.\\. " + PTN_TRY_END + "\\} "
+			+ PTN_CATCH_LABEL;;
+	public static final String PTN_TRY_CATCHALL_CATCH = ".catchall \\{"
+			+ PTN_TRY_START + " \\.\\. " + PTN_TRY_END + "\\} "
+			+ PTN_CATCHALL_LABEL;
 
 	/*
 	 * 

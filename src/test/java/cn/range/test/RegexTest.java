@@ -22,8 +22,8 @@ public class RegexTest {
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
-		String str = "return-void";
-		System.out.println(FlowUtils.lineIsReturn(str));
+//		String str = "return-void";
+//		System.out.println(FlowUtils.lineIsReturn(str));
 		
 		/*
 		List<String> lines = FileUtils.readLines(new File("cfTest_circulation.smali"), "UTF-8");
@@ -93,14 +93,12 @@ public class RegexTest {
 		}
 		*/
 		
-		/*
-		String str = "invoke-direct/jumbo {p0}, lajoidsfasdfa";
-		Pattern ptn = Pattern.compile(C.PTN_METHOD_INVOKE);
+		/**/ 
+		String str = ".catch Lmy/Exception; {:try_start_7 .. :try_end_7} :catch_0";
+		Pattern ptn = Pattern.compile(C.PTN_TRY_CATCH_CATCH);
 		Matcher mch = ptn.matcher(str);
-		if (mch.find()) {
-			System.out.println(mch.group());
-		}
-		*/ 
+		System.out.println(mch.matches());
+		
 		/* 
 		String str = "hahaha if-nez v1, :cond_0 hahahaasdfasdf";
 		

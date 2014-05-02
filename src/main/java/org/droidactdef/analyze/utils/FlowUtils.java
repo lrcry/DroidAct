@@ -47,7 +47,7 @@ public class FlowUtils {
 				break;
 			}
 		}
-		
+
 		cfOriginal.put(idReturn, nodeReturn);
 		return cfOriginal;
 	}
@@ -213,6 +213,27 @@ public class FlowUtils {
 		}
 
 		return false;
+	}
+
+	/**
+	 * 获取基本块中catch标号的信息<br />
+	 * 
+	 * @param bbs
+	 * @return <标号，块号>
+	 */
+	private static Map<String, Integer> getCatchLabelMap(List<BasicBlock> bbs) {
+		Map<String, Integer> labelCatch = new HashMap<String, Integer>();
+		for (BasicBlock bb : bbs) {
+			int id = bb.getBlockId();
+			List<String> body = bb.getBlockBody();
+			for (String line : body) {
+				if (lineIsCatchLabel(line)) {
+					labelCatch.put(line, id);
+				}
+			}
+		}
+		
+		return labelCatch;
 	}
 
 	/**
@@ -425,11 +446,72 @@ public class FlowUtils {
 	 */
 	private static boolean lineIsReturnObject(String line) {
 		String str = findStringFromLineByRegex(line, C.PTN_RETURN_OBJECT);
-		
-		if (str != null && !str.equals("")) 
+
+		if (str != null && !str.equals(""))
 			return true;
-		else 
+		else
 			return false;
+	}
+
+	/*
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * *********************************************************
+	 * 判断行中的try catch
+	 */
+	/**
+	 * 判断当前行是否为catch标号
+	 * 
+	 * @param line
+	 * @return
+	 */
+	public static boolean lineIsCatchLabel(String line) {
+		return matchStringFromLineByRegex(line, C.PTN_CATCH_LABEL);
+	}
+
+	/**
+	 * 判断当前行是否为catch指令
+	 * 
+	 * @param line
+	 * @return
+	 */
+	public static boolean lineIsCatchIns(String line) {
+		return matchStringFromLineByRegex(line, C.PTN_TRY_CATCHALL_CATCH)
+				|| matchStringFromLineByRegex(line, C.PTN_TRY_CATCH_CATCH);
+	}
+
+	/**
+	 * 取得catch指令中的catch标号
+	 * 
+	 * @param line
+	 * @return
+	 */
+	public static String getCatchLabelFromCatchIns(String line) {
+		return findStringFromLineByRegex(line, C.PTN_CATCH_LABEL)
+				+ findStringFromLineByRegex(line, C.PTN_CATCHALL_LABEL);
+	}
+
+	/**
+	 * 当前行是否为try块开始
+	 * 
+	 * @param line
+	 * @return
+	 */
+	public static boolean lineIsTryStart(String line) {
+		return matchStringFromLineByRegex(line, C.PTN_TRY_START);
+	}
+
+	/**
+	 * 当前行是否为try块结束
+	 * 
+	 * @param line
+	 * @return
+	 */
+	public static boolean lineIsTryEnd(String line) {
+		return matchStringFromLineByRegex(line, C.PTN_TRY_END);
 	}
 
 	/*
