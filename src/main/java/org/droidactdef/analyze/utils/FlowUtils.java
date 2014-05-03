@@ -232,7 +232,7 @@ public class FlowUtils {
 				}
 			}
 		}
-		
+
 		return labelCatch;
 	}
 
@@ -305,11 +305,10 @@ public class FlowUtils {
 		for (int i = 0; i < bodyLines.size(); i++) {
 			String line = bodyLines.get(i);
 			// System.out.print(line);
-			if (lineIsJmp(line) || line.matches(C.PTN_PSWITCH_START)) { // goto
-																		// goto/16
-																		// if
-																		// 指令作为一个基本块,
+			if (lineIsJmp(line) || line.matches(C.PTN_PSWITCH_START)
+					|| lineIsCatchIns(line)) { // goto, goto/16, if指令作为一个基本块,
 				// 此外packed-switch也应作为一个基本块，switch开始的地方
+				// catch语句也是基本块
 				// 先将以上的tempLines作为一个基本块存入，因为tempLines中存储的是顺序的
 				if (tempLines.size() > 0) {
 					List<String> bbpBody = new ArrayList<>(tempLines);
@@ -320,11 +319,13 @@ public class FlowUtils {
 					tempLines.clear();
 				}
 
-				// 再保存goto / if基本块
+				// 再保存goto / if基本块, packed-switch, catch语句
 				tempLines.add(line);
 				List<String> bodyJmp = new ArrayList<>(tempLines);
 				String labelJmp = findStringFromLineByRegex(line,
-						C.PTN_GOTO_LABEL + "|" + C.PTN_IF_COND);
+						C.PTN_GOTO_LABEL + "|" + C.PTN_IF_COND + "|"
+								+ C.PTN_CATCH_LABEL + "|"
+								+ C.PTN_CATCHALL_LABEL);
 				int labelLineNum = bodyLines.indexOf(labelJmp);
 				BasicBlock bbJmp = setBasicBlockValue(bbLabel, mtdName, true,
 						false, labelJmp, labelLineNum, i, bodyJmp);
@@ -332,7 +333,7 @@ public class FlowUtils {
 				bbLabel++;
 				tempLines.clear();
 				// System.out.println("跳转指令");
-			} else if (lineIsJmpLabel(line)) { // 是跳转标记
+			} else if (lineIsJmpLabel(line) || lineIsCatchLabel(line)) { // 是跳转标记或catch标记
 				if (tempLines.size() > 0) {
 					String prev = tempLines.get(tempLines.size() - 1);
 					if (!lineIsJmpLabel(prev)) { // 如果上一个（tempLines的最后一个）不是标号，那就保存上一步，并将标号作为下一个基本块的起始点
