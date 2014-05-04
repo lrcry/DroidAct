@@ -54,7 +54,9 @@ public class FlowUtils {
 
 	/**
 	 * 获取一个方法的控制流<br />
-	 * 可能投机取巧的做法：没有足够的调研就判定每个smali方法中只有一个switch片段<br />
+	 * 可解析：顺序节点，if-xxx, goto, cond_x, goto_x, pswitch_x, packed-switch,
+	 * try-catch<br />
+	 * 
 	 * 已修改为：将pswitch起点标号存入一个map中<br />
 	 * 通过另一方法<code>getControlFlowGraphWithReturn</code>来获取带终点的控制流<br />
 	 * 
@@ -84,6 +86,9 @@ public class FlowUtils {
 		Map<Object, Object> pswitchMap = new HashMap<>(); // 跳转头尾表<pswitch分支,
 															// pswitch起始>
 
+		Map<Object, Object> mapTryCatch = new HashMap<>(); // try-catch表<catch标号,
+															// catch起始>
+
 		// int pswitchStart = -1;
 
 		// if if-jump
@@ -94,8 +99,10 @@ public class FlowUtils {
 		for (BasicBlock bb : bbs) {
 			int curBbId = bb.getBlockId();
 			if (bb.isJump()) {
+				// System.out.println("I'm coming in!");
 				String jump = bb.getBlockBody().get(0);
 				String jmpLb = bb.getJmpLabel();
+				// System.out.println(jmpLb);
 				// System.out.println(jmpLb);
 				int jmpTo = -1;
 				if (lineIsCondJump(jump)) { // if if-jump
@@ -122,6 +129,22 @@ public class FlowUtils {
 					cfMap.put(curBbId, node);
 					// cf.add(node);
 					idMap.put(curBbId, jmpTo);
+				} else if (lineIsCatchIns(jump)) { // if catch
+					// System.out.println(jmpLbMap == null);
+					jmpTo = jmpLbMap.get(jmpLb);
+					List<Integer> prev = new ArrayList<>();
+					prev.add(curBbId - 1);
+					List<Integer> next = new ArrayList<>();
+					next.add(curBbId + 1); // 下一个，或跳转至的catch标号
+					next.add(jmpTo);
+
+					mapTryCatch.put(curBbId, jmpTo);
+
+					CFNode node = setCFNodeValue(curBbId, prev, next, bb);
+					cfMap.put(curBbId, node);
+					idMap.put(curBbId, jmpTo);
+					// System.out.println("Catch Ins -- get!!<" + curBbId + ", "
+					// + jmpTo + ">");
 				} else { // if packed-switch
 					// System.out.println("is this packed switch?"
 					// + bb.getBlockBody().get(0));
@@ -164,7 +187,24 @@ public class FlowUtils {
 				List<Integer> prev = new ArrayList<>();
 				List<Integer> next = new ArrayList<>();
 
-				if (containsPswitchLabel(body)) { // pswitch label
+				// System.out.println(containsCatchLabel(body) + "--"
+				// + body.get(0));
+
+				if (containsCatchLabel(body)) { // catch标号是顺序执行不到的，且只能通过catch指令跳转到，因此catch标号不能添加到其他跳转
+					// catch标号可以从多个catch指令过来
+					// System.out.println("---------------- this is catch label speaking: "
+					// + bbId + " ----------------");
+					prev = (List<Integer>) getKeyByValueFromMap(mapTryCatch,
+							bbId);
+
+					next.add(bbId + 1);
+					CFNode node = setCFNodeValue(bbId, prev, next, bb);
+					jmpLbNodesMap.put(bbId, node);
+					continue;
+				}
+
+				if (containsPswitchLabel(body)) { // pswitch
+													// label，顺序和跳转可能执行到，因此还要增加到标号中
 					prev.add((Integer) pswitchMap.get(bbId));
 				}
 
@@ -216,28 +256,8 @@ public class FlowUtils {
 	}
 
 	/**
-	 * 获取基本块中catch标号的信息<br />
-	 * 
-	 * @param bbs
-	 * @return <标号，块号>
-	 */
-	private static Map<String, Integer> getCatchLabelMap(List<BasicBlock> bbs) {
-		Map<String, Integer> labelCatch = new HashMap<String, Integer>();
-		for (BasicBlock bb : bbs) {
-			int id = bb.getBlockId();
-			List<String> body = bb.getBlockBody();
-			for (String line : body) {
-				if (lineIsCatchLabel(line)) {
-					labelCatch.put(line, id);
-				}
-			}
-		}
-
-		return labelCatch;
-	}
-
-	/**
 	 * 获取基本块中跳转标号的信息<br />
+	 * cond_x, goto_x, pswitch_x, catch_x<br />
 	 * 
 	 * @param bbs
 	 * @return <标号，块号>
@@ -249,7 +269,7 @@ public class FlowUtils {
 			// System.out.println(bb.isJumpLabel());
 			List<String> body = bb.getBlockBody();
 			for (String line : body) {
-				if (lineIsJmpLabel(line)) {
+				if (lineIsJmpLabel(line) || lineIsCatchLabel(line)) {
 					// System.out.println("getjmplabelmap = " + line);
 					jlMap.put(line, bbId);
 				}
@@ -470,7 +490,8 @@ public class FlowUtils {
 	 * @return
 	 */
 	public static boolean lineIsCatchLabel(String line) {
-		return matchStringFromLineByRegex(line, C.PTN_CATCH_LABEL);
+		return matchStringFromLineByRegex(line, C.PTN_CATCH_LABEL)
+				|| matchStringFromLineByRegex(line, C.PTN_CATCHALL_LABEL);
 	}
 
 	/**
@@ -541,6 +562,22 @@ public class FlowUtils {
 	}
 
 	/**
+	 * 判断是否包含catch标号<br />
+	 * 
+	 * @param body
+	 * @return
+	 */
+	public static boolean containsCatchLabel(List<String> body) {
+		for (String line : body) {
+			if (lineIsCatchLabel(line)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * 判断当前指令是否为跳转标号<br />
 	 * 
 	 * @param line
@@ -548,7 +585,7 @@ public class FlowUtils {
 	 */
 	public static boolean lineIsJmpLabel(String line) {
 		return lineIsCondlabel(line) || lineIsGotoLabel(line)
-				|| lineIsPswitchLabel(line);
+				|| lineIsPswitchLabel(line) || lineIsCatchLabel(line);
 	}
 
 	/**
@@ -741,10 +778,33 @@ public class FlowUtils {
 	 */
 	public static List<Integer> getPswitchLabelFromMap(
 			Map<String, Integer> jmpLbMap) {
+		return getLabelFromJumpLabelMap(jmpLbMap, C.PTN_PSWITCH_LABEL);
+	}
+
+	/**
+	 * 从跳转标号列表中获取catch标号<br />
+	 * 
+	 * @param jmpLbMap
+	 * @return 跳转标号块号列表
+	 */
+	public static List<Integer> getCatchLabelFromMap(
+			Map<String, Integer> jmpLbMap) {
+		return getLabelFromJumpLabelMap(jmpLbMap, C.PTN_CATCH_LABEL);
+	}
+
+	/**
+	 * 从跳转标号表中获取符合正则表达式的跳转标号块号<br />
+	 * 
+	 * @param jmpLbMap
+	 * @param labelRegex
+	 * @return 跳转标号块号列表
+	 */
+	private static List<Integer> getLabelFromJumpLabelMap(
+			Map<String, Integer> jmpLbMap, String labelRegex) {
 		List<Integer> idList = new ArrayList<>();
 		for (Map.Entry<String, Integer> entry : jmpLbMap.entrySet()) {
 			String key = entry.getKey();
-			if (matchStringFromLineByRegex(key, C.PTN_PSWITCH_LABEL)) {
+			if (matchStringFromLineByRegex(key, labelRegex)) {
 				idList.add(entry.getValue());
 			}
 		}
