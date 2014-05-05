@@ -436,7 +436,15 @@ public class FlowUtils {
 	 */
 	public static boolean lineIsReturn(String line) {
 		return lineIsReturnReg(line) || lineIsReturnObject(line)
-				|| lineIsReturnVoid(line);
+				|| lineIsReturnVoid(line) || lineIsReturnWide(line);
+	}
+
+	private static boolean lineIsReturnWide(String line) {
+		// TODO Auto-generated method stub
+		String returnWide = findStringFromLineByRegex(line, C.PTN_RETURN_WIDE);
+		if (returnWide == null || returnWide.equals(""))
+			return false;
+		else return true;
 	}
 
 	/**

@@ -49,46 +49,57 @@ public class TestFlowUtilsEfficiency {
 				List<BasicBlock> bbs = FlowUtils.getBasicBlockPartition(
 						bodyNew, name);
 				Map<Integer, CFNode> cf = FlowUtils.getControlFlowGraph(bbs);
+				Map<Integer, CFNode> cfFinal = FlowUtils.getControlFlowGraphWithReturn(cf);
 				// mtds.remove(name);
 				// System.out.println("Now sleep: 2000ms");
 				// Thread.sleep(2000);
-				cfMap.put(name, cf);
+				cfMap.put(name, cfFinal);
+//				cfMap.put(name, cf);
 			}
 
 			end = System.currentTimeMillis();
 
 			System.out.println("Costs: " + (end - start) + " ms");
+			System.out.println(cfMap.get(-1));
+			Thread.sleep(2000);
 
 			List<String> cfList = new ArrayList<>();
 			
 			for (Map.Entry<String, Map<Integer, CFNode>> entry : cfMap
 					.entrySet()) {
 				String name = entry.getKey();
-//				System.out.println("======================== name: "
-//						+ name + " ========================");
+				System.out.println("======================== name: "
+						+ name + " ========================");
 				cfList.add("======================== name: "
 						+ name + " ========================");
 				Map<Integer, CFNode> cf = entry.getValue();
 				for (Map.Entry<Integer, CFNode> mEntry : cf.entrySet()) {
-					
-//					System.out.println("-------------- node start --------------");
+					System.out.println("I'm here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+					System.out.println("-------------- node start --------------");
 					cfList.add("-------------- node start --------------");
 					
 					int k = mEntry.getKey();
+					
+					if (k == -1) {
+						continue;
+					}
+					
 					CFNode v = mEntry.getValue();
-//					System.out.println("Node_" + k);
+					System.out.println("k=" + k + ", v is null? " + v == null);
+					System.out.println("Node_" + k);
 					cfList.add("Node_" + k);
-//					System.out.println(v);
+					System.out.println(v);
 					cfList.add(v.toString());
-//					System.out.println("-------------- node end --------------");
+					System.out.println("-------------- node end --------------");
 					cfList.add("-------------- node end --------------");
 				}
 				
-//				System.out.println("=======++=======++=======++=======++=======");
+				System.out.println("=======++=======++=======++=======++=======");
 				cfList.add("=======++=======++=======++=======++=======");
 			}
 			
-//			FileUtils.writeLines(new File("cfresult.txt"), "UTF-8", cfList, null, false);
+			FileUtils.writeLines(new File("cfresult.txt"), "UTF-8", cfList, null, false);
+			
 		}
 	}
 }

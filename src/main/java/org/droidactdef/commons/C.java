@@ -57,6 +57,7 @@ public class C {
 	public static final String PTN_RETURN = "return [pv][0-9a-z]"; // matches
 	public static final String PTN_RETURN_VOID = "return-void"; // matches
 	public static final String PTN_RETURN_OBJECT = "return-object"; // find
+	public static final String PTN_RETURN_WIDE = "return-wide"; // find
 
 	// Try and catch
 	public static final String PTN_CATCH_LABEL = ":catch_[0-9a-z]";
