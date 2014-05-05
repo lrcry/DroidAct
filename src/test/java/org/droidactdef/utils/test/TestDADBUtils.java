@@ -1,4 +1,4 @@
-package cn.range.test;
+package org.droidactdef.utils.test;
 
 import static org.junit.Assert.*;
 

@@ -9,6 +9,7 @@ import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.io.FileUtils;
+import org.droidactdef.analyze.commons.ApiConst;
 import org.droidactdef.commons.C;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +57,30 @@ public class DroidActDBUtils {
 	 * ==============================================================
 	 * ============= Read from database =============
 	 */
+	/**
+	 * 获取方法体中含有Landroid或Lcom/android的方法<br />
+	 * 为了从中提取含有API调用的方法<br />
+	 * 
+	 * @param conn
+	 * @param crc32
+	 * @param md5
+	 * @return
+	 * @throws SQLException 
+	 */
+	public static List<Object[]> getMtdWhoseBodyIncludesAndroid(
+			Connection conn, String md5) throws SQLException {
+		String sql = "select mtd_name, mtd_superclass, mtd_body from da_methods where mtd_body like '%"
+				+ ApiConst.REGEX_L_ANDROID
+				+ "%' or '%"
+				+ ApiConst.REGEX_L_COM_ANDROID
+				+ "%' and mtd_src_apk_md5='"
+				+ md5 + "'";
+		logger.debug(sql);
+		QueryRunner runner = new QueryRunner();
+		List<Object[]> result = runner.query(conn, sql, new ArrayListHandler());
+		
+		return result;
+	}
 
 	/**
 	 * 根据APK申请的权限获取对应敏感API<br />
@@ -94,6 +119,15 @@ public class DroidActDBUtils {
 		return apis;
 	}
 
+	/**
+	 * 获取apk所有方法的方法体<br />
+	 * 
+	 * @param conn
+	 * @param crc32
+	 * @param md5
+	 * @return <mtdName, mtdBody>
+	 * @throws SQLException
+	 */
 	public static Map<String, List<String>> getAllMethodsBodies(
 			Connection conn, String crc32, String md5) throws SQLException {
 		Map<String, List<String>> mtdsBodies = new HashMap<>();
