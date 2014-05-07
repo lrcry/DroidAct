@@ -34,6 +34,8 @@ public class ApiConst {
 	 * 
 	 * Keys of Maps
 	 */
+	public static final String SUPERCLAZZ_SERVICE = "Landroid/app/Service;";
+	public static final String SUPERCLAZZ_ACTIVITY = "Landroid/app/Activity";
 
 	/**
 	 * A test of regex<br />

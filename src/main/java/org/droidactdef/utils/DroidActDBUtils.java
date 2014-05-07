@@ -6,6 +6,7 @@ import java.sql.*;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.ResultSetHandler;
 import org.apache.commons.dbutils.handlers.ArrayHandler;
 import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.io.FileUtils;
@@ -23,6 +24,9 @@ import org.slf4j.LoggerFactory;
 public class DroidActDBUtils {
 	private static final Logger logger = LoggerFactory
 			.getLogger(DroidActDBUtils.class);
+
+	private static QueryRunner runner = new QueryRunner();
+	private static ResultSetHandler<List<Object[]>> handler = new ArrayListHandler();
 
 	/**
 	 * @param args
@@ -58,14 +62,70 @@ public class DroidActDBUtils {
 	 * ============= Read from database =============
 	 */
 	/**
+	 * 判断当前方法是否是最顶层方法<br ?>
+	 * 
+	 * @param conn
+	 * @param md5
+	 * @param mtdName
+	 * @return
+	 * @throws SQLException
+	 */
+	public static boolean isMethodUppestLevel(Connection conn, String md5,
+			String mtdName) throws SQLException {
+		String sql = "select count(1) from da_methods where mtd_src_apk_md5='"
+				+ md5 + "' and mtd_body like '%" + mtdName + "%'";
+		boolean isUppest = runner.query(conn, sql,
+				new ResultSetHandler<Boolean>() {
+
+					@Override
+					public Boolean handle(ResultSet rs) throws SQLException {
+						// TODO Auto-generated method stub
+						int count = 0;
+						if (rs.next()) {
+							count = rs.getInt(1);
+						}
+
+						if (count == 0)
+							return true;
+						else if (count > 0)
+							return false;
+						else
+							throw new RuntimeException(
+									"在判断是否为最顶层方法时的数据库查询异常，count值有问题");
+					}
+				});
+
+		return isUppest;
+	}
+
+	/**
+	 * 获得调用了方法名mtdName的所有方法<br />
+	 * 
+	 * @param conn
+	 * @param md5
+	 * @param mtdName
+	 * @return [mtd_name, mtd_superclass, mtd_body]
+	 * @throws SQLException
+	 */
+	public static List<Object[]> getMtdWhoseBodyIncludeName(Connection conn,
+			String md5, String mtdName) throws SQLException {
+		String sql = "select mtd_name, mtd_superclass, mtd_body from da_methods where mtd_src_apk_name='"
+				+ md5 + "' and mtd_body like '%" + mtdName + "%'";
+		logger.debug(sql);
+		List<Object[]> result = runner.query(conn, sql, handler);
+
+		return result;
+	}
+
+	/**
 	 * 获取方法体中含有Landroid或Lcom/android的方法<br />
 	 * 为了从中提取含有API调用的方法<br />
 	 * 
 	 * @param conn
 	 * @param crc32
 	 * @param md5
-	 * @return
-	 * @throws SQLException 
+	 * @return [mtd_name, mtd_superclass, mtd_body]
+	 * @throws SQLException
 	 */
 	public static List<Object[]> getMtdWhoseBodyIncludesAndroid(
 			Connection conn, String md5) throws SQLException {
@@ -76,9 +136,8 @@ public class DroidActDBUtils {
 				+ "%' and mtd_src_apk_md5='"
 				+ md5 + "'";
 		logger.debug(sql);
-		QueryRunner runner = new QueryRunner();
-		List<Object[]> result = runner.query(conn, sql, new ArrayListHandler());
-		
+		List<Object[]> result = runner.query(conn, sql, handler);
+
 		return result;
 	}
 
@@ -110,8 +169,7 @@ public class DroidActDBUtils {
 		String sql = sqlBuilder("select", "da_android_api",
 				"api_name, api_retype, api_permission, api_type", 4,
 				sbWhere.toString(), permArr);
-		QueryRunner runner = new QueryRunner();
-		apis = runner.query(conn, sql, new ArrayListHandler(), permArr);
+		apis = runner.query(conn, sql, handler, permArr);
 
 		// String sth = constructWhereClause(new String[]{}, permissions);
 		// logger.info(sth);
@@ -135,9 +193,7 @@ public class DroidActDBUtils {
 		String sql = sqlBuilder("select", "da_methods", "mtd_name, mtd_body",
 				2, "where mtd_src_apk_crc32='" + crc32
 						+ "' and mtd_src_apk_md5='" + md5 + "'");
-		QueryRunner runner = new QueryRunner();
-		List<Object[]> results = runner
-				.query(conn, sql, new ArrayListHandler());
+		List<Object[]> results = runner.query(conn, sql, handler);
 
 		for (Object[] result : results) {
 			if (result != null && result.length == 2) {
@@ -181,8 +237,7 @@ public class DroidActDBUtils {
 		String sql = sqlBuilder("select", "da_methods", "mtd_body", 1,
 				"where mtd_name='" + mtdName + "' and mtd_src_apk_crc32='"
 						+ crc32 + "' and mtd_src_apk_md5='" + md5);
-		QueryRunner runner = new QueryRunner();
-		List<Object[]> body = runner.query(conn, sql, new ArrayListHandler());
+		List<Object[]> body = runner.query(conn, sql, handler);
 
 		List<String> bodyLines = convertObjListToStrList(body, 0);
 
@@ -204,8 +259,7 @@ public class DroidActDBUtils {
 				"where mtd_src_apk_crc32='" + crc32 + "' and mtd_src_apk_md5='"
 						+ md5 + "'", crc32, md5);
 
-		QueryRunner runner = new QueryRunner();
-		List<Object[]> names = runner.query(conn, sql, new ArrayListHandler());
+		List<Object[]> names = runner.query(conn, sql, handler);
 
 		for (Object[] name : names) {
 			System.out.println(name[0]);
@@ -248,8 +302,7 @@ public class DroidActDBUtils {
 		String sql = sqlBuilder("select", "da_methods", "*", 14,
 				sbWhere.toString(), mtdNamesArr);
 		logger.info(sql);
-		QueryRunner runner = new QueryRunner();
-		methods = runner.query(conn, sql, new ArrayListHandler(), mtdNamesArr);
+		methods = runner.query(conn, sql, handler, mtdNamesArr);
 
 		return methods;
 	}
@@ -293,8 +346,7 @@ public class DroidActDBUtils {
 		sb.append("and mtd_src_apk_md5='").append(md5).append("')");
 		String sql = new String(sb);
 		logger.info(sql);
-		QueryRunner runner = new QueryRunner();
-		methods = runner.query(conn, sql, new ArrayListHandler());
+		methods = runner.query(conn, sql, handler);
 
 		return methods;
 	}
@@ -353,7 +405,6 @@ public class DroidActDBUtils {
 				apps, mainActivity, actvs, recvs, servs, cps, maliciousLevel,
 				reportLoc };
 
-		QueryRunner runner = new QueryRunner();
 		runner.update(conn, sql, params);
 	}
 
@@ -376,7 +427,6 @@ public class DroidActDBUtils {
 
 		File file = FileUtils.getFile(fileName);
 		String sql = FileUtils.readFileToString(file, C.FILE_ENCODING);
-		QueryRunner runner = new QueryRunner();
 		runner.update(conn, sql);
 	}
 
@@ -449,7 +499,6 @@ public class DroidActDBUtils {
 	 */
 	public static void batchWriteToDb(Connection conn, String sql,
 			int colCount, Object[][] params, int maxLines) throws SQLException {
-		QueryRunner runner = new QueryRunner();
 		if (params.length < maxLines)
 			runner.batch(conn, sql, params);
 		else {
