@@ -31,6 +31,7 @@ public class ApiUtils {
 	/**
 	 * 从apk的代码中提取出调用了Android API方法的最上层方法名<br />
 	 * 即没有被别的方法再调用的方法<br />
+	 * 方法有问题，在最顶层方法中不能提取到所有的Android API<br />
 	 * 
 	 * @return <方法名， MtdIncludeApi对象>
 	 * @throws SQLException
@@ -55,12 +56,13 @@ public class ApiUtils {
 				String name = it.next(); // 调用api的方法name
 				MtdIncludeApi mia = mtdInvokingApi.get(name);
 
+				// this may cause problems
 				if (DroidActDBUtils.isMethodUppestLevel(conn, md5, name)) { // 已经最上层
 					mtdNameApiFinal.put(name, mia);
-					it.remove();
+					it.remove(); // a method may be removed before analyzed
 					continue;
 				}
-				
+
 				List<String> apis = mia.getApis();
 				List<Object[]> mtdIncludeName = DroidActDBUtils
 						.getMtdWhoseBodyIncludeName(conn, md5, name); // 调用了方法name的所有方法
@@ -105,6 +107,7 @@ public class ApiUtils {
 	 * 
 	 * 2. 获取当前方法名上层的方法，即调用了当前方法的方法<br />
 	 * 方法的入参是DroidActDBUtils.getMtdWhoseBodyIncludeName()的结果<br />
+	 * 
 	 * @Deprecated
 	 * 
 	 * @param mia
@@ -121,8 +124,9 @@ public class ApiUtils {
 	}
 
 	/**
-	 * 1. 获取直接调用API的方法名<br />
+	 * 获取直接调用API的方法名<br />
 	 * 方法的入参必须是DroidActDBUtils.getMtdWhoseBodyIncludesAndroid()方法查询到的结果<br />
+	 * 测试通过<br />
 	 * 
 	 * @param mtds
 	 *            [mtd_name, mtd_superclass, mtd_body]
@@ -142,7 +146,7 @@ public class ApiUtils {
 				String body = (String) mtd[2];
 				List<String> lines = stringToLines(body);
 				for (String line : lines) {
-//					System.out.println(line);
+					// System.out.println(line);
 					Matcher matcher = pattern.matcher(line);
 					if (matcher.find()) {
 						String api = matcher.group();
