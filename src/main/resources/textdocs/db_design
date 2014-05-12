@@ -1,0 +1,45 @@
+/*perm_api_db
+用于存放权限与系统API的映射。
+perm_api_db(map_id, api_name, perm_name, perm_level, is_data_related)*/
+
+方法表（预处理） da_methods 对于待分析的APK
+方法序号 | 方法名Lxxx/xx/Xx;->something(params)retype | 方法返回值 | 方法参数列表 | 
+方法体 （如果方法体超过65535个字符，则下一行仍然存储该方法的剩余body）
+CREATE TABLE da_methods (
+mtd_id INT(8) NOT NULL AUTO_INCREMENT PRIMARY KEY UNIQUE KEY,
+mtd_name VARCHAR(255),
+mtd_superclass TEXT,
+mtd_interface TEXT,
+mtd_retype TEXT,
+mtd_params TEXT,
+mtd_body TEXT,
+mtd_isnative BOOLEAN,
+mtd_isabstract BOOLEAN,
+mtd_create_at DATETIME,
+mtd_src_apk_name TEXT,
+mtd_src_apk_crc32 char(8),
+mtd_src_apk_md5 char(32),
+mtd_src_apk_sha1 char(40),
+INDEX(mtd_name),
+INDEX(mtd_src_apk_crc32),
+INDEX(mtd_src_apk_md5),
+INDEX(mtd_src_apk_sha1)
+)
+
+isConstructor列是否加   为识别软件 加crc32，md5和sha1并分别在上面建立索引，而并非搜索apk名称
+
+
+
+
+
+
+
+敏感API表 da_android_api 对于android系統
+方法序号 | 方法名Lxxx/xx/Xx;->something(params)retype | 方法返回值 | 方法参数列表 | 涉及的权限
+CREATE TABLE da_android_api(
+api_id INT(8) NOT NULL AUTO_INCREMENT PRIMARY KEY UNIQUE KEY,
+api_name TEXT,
+api_retype TEXT,
+api_params TEXT,
+api_permission TEXT
+)

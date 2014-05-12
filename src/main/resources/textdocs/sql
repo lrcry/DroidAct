@@ -1,0 +1,4 @@
+SELECT *
+FROM da_methods
+WHERE mtd_name LIKE '%onCreate(%' /* 查找onCreate方法，包括activity和service的onCreate */
+

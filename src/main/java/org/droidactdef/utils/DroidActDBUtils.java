@@ -62,7 +62,32 @@ public class DroidActDBUtils {
 	 * ============= Read from database =============
 	 */
 	/**
-	 * 判断当前方法是否是最顶层方法<br ?>
+	 * 获得所有顶层方法<br />
+	 * 
+	 * @param conn
+	 * @param md5
+	 * @return [mtd_name, mtd_superclass, mtd_interface, mtd_body]
+	 * @throws SQLException 
+	 */
+	public static List<Object[]> getAllTopLevelMtds(Connection conn, String md5) throws SQLException {
+		StringBuilder sb = new StringBuilder();
+		sb.append("select mtd_name, mtd_superclass, mtd_interface, mtd_body ");
+		sb.append("from da_methods d ");
+		sb.append("where mtd_src_apk_md5='").append(md5).append("' ");
+		sb.append("and not exists (");
+		sb.append("select 1 from da_methods where mtd_body like ");
+		sb.append("concat('%', d.mtd_name, '%')");
+		sb.append(")");
+		String sql = sb.toString();
+		
+		List<Object[]> result = runner.query(conn, sql, new ArrayListHandler());
+
+		return result;
+	}
+
+	/**
+	 * 判断当前方法是否是最顶层方法<br />
+	 * 注意：该方法的实现可能存在性能问题！<br />
 	 * 
 	 * @param conn
 	 * @param md5
@@ -74,28 +99,30 @@ public class DroidActDBUtils {
 			String mtdName) throws SQLException {
 		String sql = "select count(1) from da_methods where mtd_src_apk_md5='"
 				+ md5 + "' and mtd_body like '%" + mtdName + "%'";
-		boolean isUppest = runner.query(conn, sql,
-				new ResultSetHandler<Boolean>() {
+		// boolean isUppest = false;
 
-					@Override
-					public Boolean handle(ResultSet rs) throws SQLException {
-						// TODO Auto-generated method stub
-						int count = 0;
-						if (rs.next()) {
-							count = rs.getInt(1);
-						}
+		List<Object[]> results = runner
+				.query(conn, sql, new ArrayListHandler());
+		Object[] result = results.get(0);
+		long r = (long) result[0];
+		if (r == 0)
+			return true;
+		else if (r > 0)
+			return false;
+		else
+			throw new RuntimeException("在判断是否为最顶层方法时的数据库查询异常，count值有问题");
 
-						if (count == 0)
-							return true;
-						else if (count > 0)
-							return false;
-						else
-							throw new RuntimeException(
-									"在判断是否为最顶层方法时的数据库查询异常，count值有问题");
-					}
-				});
-
-		return isUppest;
+		/*
+		 * boolean isUppest = runner.query(conn, sql, new
+		 * ResultSetHandler<Boolean>() {
+		 * 
+		 * @Override public Boolean handle(ResultSet rs) throws SQLException {
+		 * // TODO Auto-generated method stub int count = 0; if (rs.next()) {
+		 * count = rs.getInt(1); }
+		 * 
+		 * if (count == 0) return true; else if (count > 0) return false; else
+		 * throw new RuntimeException( "在判断是否为最顶层方法时的数据库查询异常，count值有问题"); } });
+		 */
 	}
 
 	/**
@@ -109,9 +136,9 @@ public class DroidActDBUtils {
 	 */
 	public static List<Object[]> getMtdWhoseBodyIncludeName(Connection conn,
 			String md5, String mtdName) throws SQLException {
-		String sql = "select mtd_name, mtd_superclass, mtd_body from da_methods where mtd_src_apk_name='"
+		String sql = "select mtd_name, mtd_superclass, mtd_body from da_methods where mtd_src_apk_md5='"
 				+ md5 + "' and mtd_body like '%" + mtdName + "%'";
-		logger.debug(sql);
+		// logger.debug(sql);
 		List<Object[]> result = runner.query(conn, sql, handler);
 
 		return result;
@@ -245,25 +272,26 @@ public class DroidActDBUtils {
 	}
 
 	/**
-	 * 获得某个apk所有方法名称<br />
+	 * 获得某个apk所有方法名称，基类和接口<br />
 	 * 
 	 * @param conn
 	 * @param crc32
+	 *            (修改为传入null)
 	 * @param md5
 	 * @return
 	 * @throws SQLException
 	 */
 	public static List<Object[]> getMethodsNames(Connection conn, String crc32,
 			String md5) throws SQLException {
-		String sql = sqlBuilder("select", "da_methods", "distinct mtd_name", 1,
-				"where mtd_src_apk_crc32='" + crc32 + "' and mtd_src_apk_md5='"
-						+ md5 + "'", crc32, md5);
+		String sql = sqlBuilder("select", "da_methods",
+				"distinct mtd_name, mtd_superclass, mtd_interface", 3,
+				"where mtd_src_apk_md5='" + md5 + "'", md5);
 
 		List<Object[]> names = runner.query(conn, sql, handler);
 
-		for (Object[] name : names) {
-			System.out.println(name[0]);
-		}
+		// for (Object[] name : names) {
+		// System.out.println(name[0]);
+		// }
 
 		return names;
 	}

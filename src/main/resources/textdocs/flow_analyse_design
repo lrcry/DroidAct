@@ -1,0 +1,105 @@
+分析的目标：
+主Activity的onCreate方法。
+组件Activity、receiver、Service的onCreate方法
+application的onCreate。
+
+循环的判断条件：
+1. 跳转指令(if-xxx xx:cond_x | goto :goto_x)所在的行数在对应的跳转标号的后面
+2. 标号所在的基本块中没有return指令
+循环的处理：标识出来，每个循环在分析时只看一次。
+区分循环和pswitch。??
+
+先找出主干，即不进行任何条件跳转，只记录出现的任何条件跳转的块ID和跳转标号。之后把跳转信息附加在主干上
+
+
+if-nez 判非0或非空
+smali 循环
+---------Iterator--------- 如果迭代器是自己实现则判断困难
+迭代器regex: 
+"invoke-interface {[vp][0-9]*}, Ljava/util/Iterator;->hasNext()Z" // Iterator: hasNext()
+"move-result [vp][0-9]*";
+可能："if-nez {[vp][0-9]*} :cond_[0-9]*" // hasNext()的值
+"invoke-interface {[vp][0-9]*}, Ljava/util/Iterator;->next()Ljava/lang/Object;" //Iterator: next()
+"move-result-object [vp][0-9]*"
+
+
+Iterator it = ...;
+while (it.hasNext()) {
+	...it.next();
+	...;
+}
+等价于
+for (Object o : objects) {
+	...o;
+}
+
+..
+	:goto/cond_label (or several labels)
+	invoke-interface {v4}, Ljava/util/Iterator;->hasNext()Z
+	move-result v5 #v5:Z
+	if-nez v5, :cond_0 # hasNext() == true  or  if-eqz v5, :cond_0 hasNext() == false, 与下面相反
+	# hasNext() == false
+	something
+	return-xxx or goto someplace
+	:cond_0
+	invoke-interface {v4}, Ljava/util/Iterator;->next()Ljava/lang/Object;
+	move-result-object v1
+	something
+	goto :goto/cond_label # go to judge if the Iterator is null
+	
+---------普通循环---------
+
+
+
+数据流节点：
+1. 数据程序类型
+2. 数据敏感类型（哪一类敏感数据）
+3. 来自哪个方法
+4. 当前被哪个方法处理
+5. 将被传给哪个方法
+6. 被返回还是被传入
+
+获取和分析的过程中有哪些可以利用数据库SQL进行操作（为节省内存）
+获取数据流：
+1. 使用SQL查询方法体中含有所有敏感api（和反射调用）的方法名，并按照该方法名和apk信息取出具有该方法名的
+	全部方法体（StringBuilder to List<String> or something）
+	做法：先从敏感API列表中取出一条API，查询如上。
+2. 循环查询，像步骤1那样，直到查询不到该方法名为止。
+3. 分析:
+	m1() {... c->api1(pl)r ...} api的返回值含义是直接数据还是游标？
+	m2() {... c->m1(pl)r ...} 返回值r是否为V？是否为Z/[Z？{若不是，则是否为数据？}
+						{若是，则数据被怎样处理了？（如果是调用敏感api发送短信或网络，则确定；若不是，则数据被处理，需要看参数）}
+	m3() {... c->m2(pl)r ...} 
+	<数据流的分析不考虑跳转分支。?>
+	
+	
+控制流节点：
+1. 方法名
+2. 是否敏感API
+[3. 父节点 	对于循环来说父节点是谁？]
+4. 子节点 		若是分支，一个节点不同的子节点表示其有不同的分支，相应就属于不同的控制流
+
+获取控制流：
+1. 已经得到MainActivity的名称，找该主Activity的onCreate方法（起始点），获取其body的全部
+2. 使用regex匹配其调用的方法，获取其名称和body，在循环使用regex匹配
+3. 对于跳转和分支的处理：if-指令，xx-switch指令 + cond_x和goto_x标记
+4. 分析控制流：跳转分支，
+		   敏感API
+
+每个方法提取出控制流（可能不只一条）。只找方法调用
+	方法调用的正则表达式。
+	cond_x标记，
+	goto_x标记，
+	goto :goto_x; goto/16 :goto_x指令
+	定义一个列表，记录每个方法是否被分析。 
+		<mtdName (from DB), isGen (If the control flow of this method is generated)>
+	
+	packed-switch switch最终的出口是同一个??
+	sparse-switch 不用考虑，使用这种方法反编译的smali中没有sparse-switch出现（待大量样本测试）
+	循环：和if类似
+	
+		   
+如何将控制流和数据流分析的结果与apk的信息结合？
+
+
+

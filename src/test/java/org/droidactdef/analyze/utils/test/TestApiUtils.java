@@ -6,11 +6,14 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.droidactdef.analyze.domains.MtdIncludeApi;
+import org.droidactdef.analyze.domains.TopLevelMtd;
 import org.droidactdef.analyze.utils.ApiUtils;
+import org.droidactdef.utils.DroidActDBUtils;
 import org.junit.Test;
 
 public class TestApiUtils {
@@ -21,9 +24,19 @@ public class TestApiUtils {
 		DbUtils.loadDriver("com.mysql.jdbc.Driver");
 		Connection conn = DriverManager.getConnection(
 				"jdbc:mysql://localhost:3306/droidact", "root", "admin");
-		Map<String, MtdIncludeApi> mapMtdApi = ApiUtils
-				.getFinalMtdNameIncludingApi(conn, "4f65245c31844079");
+		List<Object[]> topLvList = DroidActDBUtils.getAllTopLevelMtds(conn, "4f65245c31844079");
+		Map<String, TopLevelMtd> tlMap = ApiUtils.getTopLvMtdMap(topLvList);
 		
+		Iterator<String> iter = tlMap.keySet().iterator();
+		while (iter.hasNext()) {
+			String name = iter.next();
+			System.out.println(tlMap.get(name).toString());
+		}
+		
+//		Map<String, MtdIncludeApi> mapMtdApi = ApiUtils
+//				.getFinalMtdNameIncludingApi(conn, "4f65245c31844079");
+		
+		/*
 		System.out.println(mapMtdApi.size());
 		
 		Iterator<String> it = mapMtdApi.keySet().iterator();
@@ -35,7 +48,7 @@ public class TestApiUtils {
 			System.out.println("============== METHOD: " + name + " ==============");
 			MtdIncludeApi mia = mapMtdApi.get(name);
 			System.out.println(mia.toString());
-		}
+		}*/
 		
 	}
 
