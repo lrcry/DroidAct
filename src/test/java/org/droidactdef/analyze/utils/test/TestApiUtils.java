@@ -2,12 +2,8 @@ package org.droidactdef.analyze.utils.test;
 
 import static org.junit.Assert.*;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 import org.apache.commons.dbutils.DbUtils;
 import org.droidactdef.analyze.domains.MtdIncludeApi;
@@ -24,17 +20,18 @@ public class TestApiUtils {
 		DbUtils.loadDriver("com.mysql.jdbc.Driver");
 		Connection conn = DriverManager.getConnection(
 				"jdbc:mysql://localhost:3306/droidact", "root", "admin");
-		List<Object[]> topLvList = DroidActDBUtils.getAllTopLevelMtds(conn, "4f65245c31844079");
-		Map<String, TopLevelMtd> tlMap = ApiUtils.getTopLvMtdMap(topLvList);
 		
-		Iterator<String> iter = tlMap.keySet().iterator();
+		
+		
+		Map<String, TopLevelMtd> mapMtdApi = ApiUtils
+				.getFinalMtdNameIncludingApi(conn, "4f65245c31844079");
+		System.out.println("get top level over, now sleeping 5s...");
+		Thread.sleep(5000);
+		Iterator<String> iter = mapMtdApi.keySet().iterator();
 		while (iter.hasNext()) {
 			String name = iter.next();
-			System.out.println(tlMap.get(name).toString());
+			System.out.println(mapMtdApi.get(name).toString());
 		}
-		
-//		Map<String, MtdIncludeApi> mapMtdApi = ApiUtils
-//				.getFinalMtdNameIncludingApi(conn, "4f65245c31844079");
 		
 		/*
 		System.out.println(mapMtdApi.size());

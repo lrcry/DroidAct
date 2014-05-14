@@ -11,17 +11,26 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.droidactdef.analyze.SmaliFlowAnalyzer;
+import org.droidactdef.analyze.commons.ApiConst;
 import org.droidactdef.analyze.impl.ControlFlowAnalyzer;
 import org.droidactdef.analyze.utils.FlowUtils;
 import org.droidactdef.commons.C;
 
 public class RegexTest {
+	private static Pattern pattern;
+	private static Matcher matcher;
 
 	/**
 	 * @param args
 	 * @throws IOException 
 	 */
 	public static void main(String[] args) throws IOException {
+		String str = "invoke-virtual {v0, v1, v2}, Lb;->a(ILjava/lang/String;)V";
+		pattern = Pattern.compile(ApiConst.REGEX_METHOD_INVOCATION);
+		matcher = pattern.matcher(str);
+		System.out.println(matcher.matches());
+		System.out.println(ApiConst.REGEX_METHOD_INVOCATION);
+		
 //		String str = "return-void";
 //		System.out.println(FlowUtils.lineIsReturn(str));
 		
@@ -93,11 +102,11 @@ public class RegexTest {
 		}
 		*/
 		
-		/**/ 
+		/*
 		String str = ".catch Lmy/Exception; {:try_start_7 .. :try_end_7} :catch_0";
 		Pattern ptn = Pattern.compile(C.PTN_TRY_CATCH_CATCH);
 		Matcher mch = ptn.matcher(str);
-		System.out.println(mch.matches());
+		System.out.println(mch.matches());*/ 
 		
 		/* 
 		String str = "hahaha if-nez v1, :cond_0 hahahaasdfasdf";

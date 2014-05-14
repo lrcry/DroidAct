@@ -19,10 +19,14 @@ public class ApiConst {
 	public static final String REGEX_L_ANDROID = "Landroid/";
 	public static final String REGEX_L_COM_ANDROID = "Lcom/android/";
 
-	public static final String REGEX_ANDROID_API = "((" + REGEX_L_ANDROID + ")" + "|"
-			+ "(" + REGEX_L_COM_ANDROID + "))" + C.PTN_METHOD;
+	public static final String REGEX_ANDROID_API = "((" + REGEX_L_ANDROID + ")"
+			+ "|" + "(" + REGEX_L_COM_ANDROID + "))" + C.PTN_METHOD;
 
 	// 匹配单行是否为方法调用
+	public static final String REGEX_METHOD_INVOCATION = C.PTN_METHOD_INVOKE
+			+ " " + C.PTN_METHOD_REGS + ", " + C.PTN_METHOD;
+
+	// 匹配单行是否为API方法调用
 	public static final String REGEX_ANDROID_API_INVOKE = C.PTN_METHOD_INVOKE
 			+ " " + C.PTN_METHOD_REGS + ", " + REGEX_ANDROID_API;
 	/*
@@ -49,7 +53,7 @@ public class ApiConst {
 		String strNonApi = "invoke-virtual {v0}, Ljava/lang/String;->getBytes()[B";
 		Pattern ptn = Pattern.compile(REGEX_ANDROID_API);
 		Matcher mch = ptn.matcher(strCast);
-//		System.out.println(REGEX_ANDROID_API);
+		// System.out.println(REGEX_ANDROID_API);
 		if (mch.find())
 			System.out.println(mch.group());
 	}

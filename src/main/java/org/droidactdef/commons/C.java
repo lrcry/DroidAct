@@ -31,13 +31,13 @@ public class C {
 	// Registers
 	private static final String PTN_REG = "[vp][0-9]*";
 	private static final String PTN_REGS = "[" + PTN_REG + ", ]*" + PTN_REG;
-	
+
 	// Method invocation
-	public static final String PTN_METHOD = "[a-zA-Z0-9_/$]*;->[a-zA-Z0-9<>_/$]*\\([a-zA-Z0-9_/$;\\[]*\\)[a-zA-Z0-9_/$;]*";
+	public static final String PTN_METHOD = "[a-zA-Z0-9_/$]*;->[a-zA-Z0-9<>_/$]*\\([a-zA-Z0-9_/$;\\[]*\\)[a-zA-Z0-9_/\\[$;]*";
 	public static final String PTN_METHOD_INVOKE = "invoke-[a-z\\/]*";
 	public static final String PTN_METHOD_REGS = "\\{" + PTN_REGS + "\\}";
 	public static final String PTN_CLAZZ = "L[a-zA-Z0-9_/$]*;";
-	
+
 	// Jumping
 	public static final String PTN_GOTO_LABEL = ":goto_[0-9a-z]"; // goto标号
 	public static final String PTN_IF_COND = ":cond_[0-9a-z]";
@@ -64,8 +64,8 @@ public class C {
 	public static final String PTN_CATCHALL_LABEL = ":catchall_[0-9a-z]";
 	public static final String PTN_TRY_START = ":try_start_[0-9a-z]";
 	public static final String PTN_TRY_END = ":try_end_[0-9a-z]";
-	public static final String PTN_TRY_CATCH_CATCH = ".catch " + PTN_CLAZZ + " \\{"
-			+ PTN_TRY_START + " \\.\\. " + PTN_TRY_END + "\\} "
+	public static final String PTN_TRY_CATCH_CATCH = ".catch " + PTN_CLAZZ
+			+ " \\{" + PTN_TRY_START + " \\.\\. " + PTN_TRY_END + "\\} "
 			+ PTN_CATCH_LABEL;;
 	public static final String PTN_TRY_CATCHALL_CATCH = ".catchall \\{"
 			+ PTN_TRY_START + " \\.\\. " + PTN_TRY_END + "\\} "

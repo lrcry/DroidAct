@@ -278,7 +278,7 @@ public class DroidActDBUtils {
 	 * @param crc32
 	 *            (修改为传入null)
 	 * @param md5
-	 * @return
+	 * @return List<[mtd_name, mtd_superclass, mtd_interface]>
 	 * @throws SQLException
 	 */
 	public static List<Object[]> getMethodsNames(Connection conn, String crc32,
@@ -307,7 +307,7 @@ public class DroidActDBUtils {
 	 * @param conn
 	 *            数据库连接
 	 * @param crc32
-	 *            APK的CRC32
+	 *            APK的CRC32 <code>null</code>
 	 * @param md5
 	 *            APK的MD5，与CRC32共同确定唯一APK
 	 * @param mtdNames
