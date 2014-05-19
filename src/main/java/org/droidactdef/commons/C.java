@@ -126,4 +126,8 @@ public class C {
 
 	public static final String PSWITCH_DATA_START = "pswitch_data";
 	public static final String PSWITCH_DATA_END = ".end packed-switch";
+	
+	public static void main(String[] args) {
+		System.out.println(PTN_TRY_CATCH_CATCH);
+	}
 }

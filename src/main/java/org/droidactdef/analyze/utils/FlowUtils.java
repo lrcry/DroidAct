@@ -369,7 +369,7 @@ public class FlowUtils {
 				// 再将这个作为第一行
 				tempLines.add(line);
 				// System.out.println("跳转标记");
-			} else { // 顺序执行的，只有在遇到跳转指令或跳转标记时才保存上一步的基本块，不管trycatch
+			} else { // 顺序执行的，只有在遇到跳转指令或跳转标记时才保存上一步的基本块
 				tempLines.add(line);
 				// System.out.println("顺序执行");
 			}

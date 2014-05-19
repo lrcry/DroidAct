@@ -102,11 +102,11 @@ public class BasicBlock {
 			sb.append("跳转标记号:").append(this.jmpLabel).append("\n");
 			sb.append("跳转至行数:").append(this.jmpToLineNumber).append("\n");
 			sb.append("跳转指令当前行数:").append(this.curLineNumber).append("\n");
-		}
+		}/*
 		sb.append("块体:").append("\n");
 		for (String line : this.blockBody) {
 			sb.append(line).append("\n");
-		}
+		}*/
 
 		return sb.toString();
 	}

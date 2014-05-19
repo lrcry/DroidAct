@@ -15,7 +15,7 @@ import org.junit.Test;
 public class TestApiUtils {
 
 	@Test
-	public void test() throws SQLException, InterruptedException {
+	public void test() throws Exception {
 		// fail("Not yet implemented");
 		DbUtils.loadDriver("com.mysql.jdbc.Driver");
 		Connection conn = DriverManager.getConnection(

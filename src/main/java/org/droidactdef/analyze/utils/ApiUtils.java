@@ -1,9 +1,12 @@
 package org.droidactdef.analyze.utils;
 
+import java.io.File;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import java.util.regex.*;
 
+import org.apache.commons.io.FileUtils;
 import org.droidactdef.analyze.commons.ApiConst;
 import org.droidactdef.analyze.domains.MtdIncludeApi;
 import org.droidactdef.analyze.domains.TopLevelMtd;
@@ -29,24 +32,17 @@ public class ApiUtils {
 	/**
 	 * 从apk的代码中提取出调用了Android API方法的最上层方法名<br />
 	 * 即没有被别的方法再调用的方法<br />
-	 * 方法有问题，在最顶层方法中不能提取到所有的Android API<br />
-	 * 本地备份于__tempCodes/apiutilsTemp.java<br />
-	 * 
-	 * 新方法仍有问题，无法迭代至集合size=0<br />
-	 * 2014 05 09<br />
-	 * 
-	 * 2014 05 12 自上而下分析尝试<br />
-	 * 2014 05 14继续<br />
-	 * 发现官方工具apktool也不能反编译出apk的全部内容<br />
 	 * 
 	 * @return <方法名， MtdIncludeApi对象>
 	 * @throws SQLException
 	 * @throws InterruptedException
+	 * @throws IOException
 	 */
 	public static Map<String, TopLevelMtd> getFinalMtdNameIncludingApi(
 			Connection conn, String md5) throws SQLException,
-			InterruptedException {
+			InterruptedException, IOException {
 		// TODO move allNames to the starter
+		List<String> fileLines = new ArrayList<>();
 		List<Object[]> allMtds = DroidActDBUtils.getMethodsNames(conn, null,
 				md5); // 该APK所有方法名称。该集合不应放在此处，应放在starter中。此处测试用
 		List<String> allNames = new ArrayList<>();
@@ -55,6 +51,7 @@ public class ApiUtils {
 				allNames.add((String) mtd[0]);
 		}
 
+		// 方法开始
 		// 获取所有顶层方法
 		List<Object[]> tlMtdList = DroidActDBUtils
 				.getAllTopLevelMtds(conn, md5);
@@ -64,13 +61,13 @@ public class ApiUtils {
 		// Map<String, TopLevelMtd> temp = new HashMap<>();
 		Map<String, SmaliMethod> temp = new HashMap<>();
 
-		// 存储所有顶层方法调用的非API方法名，<name, List<Object[]> names>
-		Map<String, List<Object[]>> tlNonApiNames = new HashMap<>();
+		// 存储所有顶层方法调用的非API方法名，<topLevelName, List<Object[]> names>
+		Map<String, List<String>> tlNonApiNames = new HashMap<>();
 
 		// Iterate topLevelMap
 		Iterator<String> tlMapIt = topLevelMap.keySet().iterator();
 		while (tlMapIt.hasNext()) {
-			List<Object[]> mtdNames = new ArrayList<>(); // 存储当前顶层方法调用的非API方法名
+			List<String> mtdNames = new ArrayList<>(); // 存储当前顶层方法调用的非API方法名
 
 			String name = tlMapIt.next();
 			TopLevelMtd tlm = topLevelMap.get(name);
@@ -90,9 +87,9 @@ public class ApiUtils {
 						String mtdName = RegexUtils.findStringFromLineByRegex(
 								line, C.PTN_METHOD);
 						if (allNames.contains(mtdName)) { // 是本APK方法但不是API，则存入temp，否则丢弃
-							Object[] nonApiName = new String[]{mtdName};
-							mtdNames.add(nonApiName);
-							
+						// Object[] nonApiName = new String[] { mtdName };
+							mtdNames.add(mtdName);
+
 						}
 					}
 				}
@@ -102,9 +99,82 @@ public class ApiUtils {
 			// 更新顶层方法集合topLevelMap
 			tlm.setApis(apis);
 			topLevelMap.put(name, tlm);
-			
+
 			// 将非API方法名添加
 			tlNonApiNames.put(name, mtdNames);
+		}
+
+		// 查询非API方法，并迭代该集合直至该集合为空
+		while (tlNonApiNames.size() > 0) {
+
+			Iterator<String> iter = tlNonApiNames.keySet().iterator();
+
+			// 对每个顶层方法的非API集合进行循环
+			while (iter.hasNext()) {
+				// flag
+
+				String tlName = iter.next();
+				List<String> mtdNames = tlNonApiNames.get(tlName);
+				// System.out.println((mtdNames == null || mtdNames.size() == 0)
+				// + tlName);
+				if (mtdNames.size() == 0) {
+					iter.remove();
+					// System.out.println("No non apis in " + tlName);
+					continue;
+				}
+
+				// for (String o : mtdNames) {
+				// System.out.println(o);
+				// }
+				// Thread.sleep(2000);
+
+				List<Object[]> mtds = DroidActDBUtils.getMethodsByName(conn,
+						null, md5, mtdNames);
+				// System.out.println("mtds size: " + mtds.size());
+				List<String> mtdsNew = new ArrayList<>(); // 新添加非API方法【名称】
+				// Thread.sleep(2000);
+
+				Iterator<Object[]> mtdsIt = mtds.iterator();
+				while (mtdsIt.hasNext()) { // 顶层方法的一个非API调用
+				// System.out.println("while executed");
+					Object[] mtd = mtdsIt.next();
+					List<String> body = stringToLines((String) mtd[6]);
+					// System.out.println("body size: " + body.size());
+					for (String line : body) { // mtd_name = mtd[1]; mtd_body =
+												// mtd[6]
+						String found = RegexUtils.findStringFromLineByRegex(
+								line, ApiConst.REGEX_ANDROID_API);
+						// System.out.println(found);
+						fileLines.add(found);
+						// System.out.println("add?" + b);
+
+						if (found == null || found.equals("")) { // 不是API方法调用
+							found = RegexUtils.findStringFromLineByRegex(line,
+									C.PTN_METHOD);
+							if (found == null || found.equals("")) { // 不是方法调用
+								; // do nothing
+							} else { // 是方法调用（非API）
+
+								mtdsNew.add(found);
+							}
+						} else { // API方法
+
+							TopLevelMtd tlm = topLevelMap.get(tlName);
+							HashSet<String> apis = tlm.getApis();
+							apis.add(found); // 添加API
+							tlm.setApis(apis);
+							topLevelMap.put(tlName, tlm);
+						}
+					}
+				}
+
+				tlNonApiNames.put(tlName, mtdsNew);
+
+				// count++;
+			}
+
+			// System.out.println(tlNonApiNames.size() + " left");
+			// Thread.sleep(500);
 		}
 
 		return topLevelMap;

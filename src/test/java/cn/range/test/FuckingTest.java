@@ -32,12 +32,13 @@ public class FuckingTest {
 
 		// 获取基本块划分
 		List<BasicBlock> bbs = FlowUtils.getBasicBlockPartition(trimedLines,
-				"lovewhatwhat");
-		// for (BasicBlock bb : bbs) {
-		// System.out.println(bb.toString());
-		// }
+				"Lad/imadpush/com/poster/PosterInfoActivity;->onCreate(Landroid/os/Bundle;)V");
+		 for (BasicBlock bb : bbs) {
+		 System.out.println(bb.toString());
+		 }
 		// Thread.sleep(5000);
 
+		/*
 		// 获取控制流图
 		Map<Integer, CFNode> cf = FlowUtils.getControlFlowGraph(bbs);
 		cf = FlowUtils.getControlFlowGraphWithReturn(cf);
@@ -58,7 +59,7 @@ public class FuckingTest {
 			}
 				
 //				Thread.sleep(3000);
-		}
+		}*/
 
 		// Why don't try adjacent matrix?
 		/*

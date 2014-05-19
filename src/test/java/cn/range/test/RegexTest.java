@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -15,6 +16,7 @@ import org.droidactdef.analyze.commons.ApiConst;
 import org.droidactdef.analyze.impl.ControlFlowAnalyzer;
 import org.droidactdef.analyze.utils.FlowUtils;
 import org.droidactdef.commons.C;
+import org.droidactdef.utils.RegexUtils;
 
 public class RegexTest {
 	private static Pattern pattern;
@@ -24,12 +26,12 @@ public class RegexTest {
 	 * @param args
 	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws IOException {
-		String str = "invoke-virtual {v0, v1, v2}, Lb;->a(ILjava/lang/String;)V";
-		pattern = Pattern.compile(ApiConst.REGEX_METHOD_INVOCATION);
-		matcher = pattern.matcher(str);
-		System.out.println(matcher.matches());
-		System.out.println(ApiConst.REGEX_METHOD_INVOCATION);
+	public static void main(String[] args) throws Exception {
+		String str = "invoke-virtual {v0}, Ljava/lang/Class;->desiredAssertionStatus()Z";
+		String found = RegexUtils.findStringFromLineByRegex(str, C.PTN_METHOD);
+		System.out.println(found);
+		
+		
 		
 //		String str = "return-void";
 //		System.out.println(FlowUtils.lineIsReturn(str));

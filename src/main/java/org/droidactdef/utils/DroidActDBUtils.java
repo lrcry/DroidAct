@@ -316,12 +316,17 @@ public class DroidActDBUtils {
 	 * @throws SQLException
 	 */
 	public static List<Object[]> getMethodsByName(Connection conn,
-			String crc32, String md5, List<Object[]> mtdNames)
+			String crc32, String md5, List<String> mtdNames)
 			throws SQLException {
 		List<Object[]> methods = new ArrayList<>();
 		Object[] mtdNamesArr = mtdNames.toArray();
-		StringBuilder sbWhere = new StringBuilder("where mtd_src_apk_crc32='"
-				+ crc32 + "' and mtd_src_apk_md5='" + md5
+		
+		
+//		for (int i = 0; i < mtdNamesArr.length; i++) {
+//			System.out.println(((Object[]) mtdNamesArr[i])[0]);
+//		}
+		
+		StringBuilder sbWhere = new StringBuilder("where mtd_src_apk_md5='" + md5
 				+ "' and mtd_name in (");
 		for (int i = 0; i < mtdNames.size() - 1; i++) {
 			sbWhere.append('?').append(',');
