@@ -67,9 +67,10 @@ public class DroidActDBUtils {
 	 * @param conn
 	 * @param md5
 	 * @return [mtd_name, mtd_superclass, mtd_interface, mtd_body]
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
-	public static List<Object[]> getAllTopLevelMtds(Connection conn, String md5) throws SQLException {
+	public static List<Object[]> getAllTopLevelMtds(Connection conn, String md5)
+			throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		sb.append("select mtd_name, mtd_superclass, mtd_interface, mtd_body ");
 		sb.append("from da_methods d ");
@@ -79,7 +80,7 @@ public class DroidActDBUtils {
 		sb.append("concat('%', d.mtd_name, '%')");
 		sb.append(")");
 		String sql = sb.toString();
-		
+
 		List<Object[]> result = runner.query(conn, sql, new ArrayListHandler());
 
 		return result;
@@ -111,18 +112,6 @@ public class DroidActDBUtils {
 			return false;
 		else
 			throw new RuntimeException("在判断是否为最顶层方法时的数据库查询异常，count值有问题");
-
-		/*
-		 * boolean isUppest = runner.query(conn, sql, new
-		 * ResultSetHandler<Boolean>() {
-		 * 
-		 * @Override public Boolean handle(ResultSet rs) throws SQLException {
-		 * // TODO Auto-generated method stub int count = 0; if (rs.next()) {
-		 * count = rs.getInt(1); }
-		 * 
-		 * if (count == 0) return true; else if (count > 0) return false; else
-		 * throw new RuntimeException( "在判断是否为最顶层方法时的数据库查询异常，count值有问题"); } });
-		 */
 	}
 
 	/**
@@ -262,8 +251,7 @@ public class DroidActDBUtils {
 	public static List<String> getBodyByMethodName(Connection conn,
 			String mtdName, String crc32, String md5) throws SQLException {
 		String sql = sqlBuilder("select", "da_methods", "mtd_body", 1,
-				"where mtd_name='" + mtdName + "' and mtd_src_apk_crc32='"
-						+ crc32 + "' and mtd_src_apk_md5='" + md5);
+				"where mtd_name='" + mtdName + "' and mtd_src_apk_md5='" + md5 + "'");
 		List<Object[]> body = runner.query(conn, sql, handler);
 
 		List<String> bodyLines = convertObjListToStrList(body, 0);
@@ -316,25 +304,24 @@ public class DroidActDBUtils {
 	 * @throws SQLException
 	 */
 	public static List<Object[]> getMethodsByName(Connection conn,
-			String crc32, String md5, List<String> mtdNames)
+			String crc32, String md5, Collection<String> mtdNames)
 			throws SQLException {
 		List<Object[]> methods = new ArrayList<>();
 		Object[] mtdNamesArr = mtdNames.toArray();
-		
-		
-//		for (int i = 0; i < mtdNamesArr.length; i++) {
-//			System.out.println(((Object[]) mtdNamesArr[i])[0]);
-//		}
-		
-		StringBuilder sbWhere = new StringBuilder("where mtd_src_apk_md5='" + md5
-				+ "' and mtd_name in (");
+
+		// for (int i = 0; i < mtdNamesArr.length; i++) {
+		// System.out.println(((Object[]) mtdNamesArr[i])[0]);
+		// }
+
+		StringBuilder sbWhere = new StringBuilder("where mtd_src_apk_md5='"
+				+ md5 + "' and mtd_name in (");
 		for (int i = 0; i < mtdNames.size() - 1; i++) {
 			sbWhere.append('?').append(',');
 		}
 		sbWhere.append("?)");
 		String sql = sqlBuilder("select", "da_methods", "*", 14,
 				sbWhere.toString(), mtdNamesArr);
-		logger.info(sql);
+//		logger.info(sql);
 		methods = runner.query(conn, sql, handler, mtdNamesArr);
 
 		return methods;
@@ -688,7 +675,7 @@ public class DroidActDBUtils {
 
 		String sql = sb.toString();
 		// System.out.println(sql);
-		logger.info(sql);
+//		logger.info(sql);
 		return sql;
 	}
 

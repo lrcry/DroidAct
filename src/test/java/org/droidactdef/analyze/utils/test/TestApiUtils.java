@@ -21,10 +21,14 @@ public class TestApiUtils {
 		Connection conn = DriverManager.getConnection(
 				"jdbc:mysql://localhost:3306/droidact", "root", "admin");
 		
-		
+		List<Object[]> allMtdNamesObj = DroidActDBUtils.getMethodsNames(conn, null, "4f65245c31844079");
+		List<String> allMtdNames = new ArrayList<>();
+		for (Object[] o : allMtdNamesObj) {
+			allMtdNames.add((String) o[0]);
+		}
 		
 		Map<String, TopLevelMtd> mapMtdApi = ApiUtils
-				.getFinalMtdNameIncludingApi(conn, "4f65245c31844079");
+				.getTopLevelMtdsWithApi(conn, "4f65245c31844079", allMtdNames);
 		System.out.println("get top level over, now sleeping 5s...");
 		Thread.sleep(5000);
 		Iterator<String> iter = mapMtdApi.keySet().iterator();
@@ -32,20 +36,6 @@ public class TestApiUtils {
 			String name = iter.next();
 			System.out.println(mapMtdApi.get(name).toString());
 		}
-		
-		/*
-		System.out.println(mapMtdApi.size());
-		
-		Iterator<String> it = mapMtdApi.keySet().iterator();
-		System.out.println("Result will display below after 5s...");
-		Thread.sleep(5000);
-		
-		while (it.hasNext()) {
-			String name = it.next();
-			System.out.println("============== METHOD: " + name + " ==============");
-			MtdIncludeApi mia = mapMtdApi.get(name);
-			System.out.println(mia.toString());
-		}*/
 		
 	}
 

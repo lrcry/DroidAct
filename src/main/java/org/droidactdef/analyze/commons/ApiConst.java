@@ -41,12 +41,17 @@ public class ApiConst {
 	public static final String SUPERCLAZZ_SERVICE = "Landroid/app/Service;";
 	public static final String SUPERCLAZZ_ACTIVITY = "Landroid/app/Activity";
 
+	public static void main(String[] args) {
+		System.out.println("api: " + REGEX_ANDROID_API_INVOKE);
+		System.out.println("non-api: " + REGEX_METHOD_INVOCATION);
+	}
+	
 	/**
 	 * A test of regex<br />
 	 * 
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void main22(String[] args) {
 		String str = "invoke-virtual {p0}, Lcom/android/telephony/TelephonyManager;->getDeviceId()Ljava/lang/String;";
 		String str2 = "invoke-virtual {v0, v1}, Landroid/content/Context;->getSystemService(Ljava/lang/String;)Ljava/lang/Object;";
 		String strCast = "check-cast v0, Landroid/telephony/TelephonyManager;";
