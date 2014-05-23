@@ -12,6 +12,8 @@ import org.apache.commons.dbutils.handlers.ArrayListHandler;
 import org.apache.commons.io.FileUtils;
 import org.droidactdef.analyze.domains.BasicBlock;
 import org.droidactdef.analyze.domains.CFNode;
+import org.droidactdef.analyze.domains.TopLevelMtd;
+import org.droidactdef.analyze.utils.ApiUtils;
 import org.droidactdef.analyze.utils.FlowUtils;
 import org.droidactdef.utils.DroidActDBUtils;
 
@@ -22,7 +24,10 @@ public class TestFlowUtilsEfficiency {
 	 */
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
-		Map<String, Map<Integer, CFNode>> cfMap = new HashMap<>();
+		// Map<String, Map<Integer, CFNode>> cfMap = new HashMap<>();
+		Map<Integer, CFNode> cfcf;
+		String md5 = "4f65245c31844079";
+		String mtdName = "Lcom/tebs3/cuttherope/MainActivity;->onCreate(Landroid/os/Bundle;)V";
 
 		if (DbUtils.loadDriver("com.mysql.jdbc.Driver")) {
 			Connection conn = DriverManager.getConnection(
@@ -34,72 +39,47 @@ public class TestFlowUtilsEfficiency {
 			Map<String, List<String>> mtds = DroidActDBUtils
 					.getAllMethodsBodies(conn, "21CAA179", "4f65245c31844079");
 
-			for (Map.Entry<String, List<String>> entry : mtds.entrySet()) {
-				String name = entry.getKey();
-				// System.out.println("+++++++++++++++++++ Current method name: "
-				// + name + "+++++++++++++++++++");
-				List<String> body = entry.getValue();
-				// System.out.println("=========================== body ======================");
-
-				List<String> bodyNew = FlowUtils.removeBlankLines(body);
-				FlowUtils.removePswitchDefinition(bodyNew);
-				// for (int i = 0; i < bodyNew.size(); i++) {
-				// System.out.println(bodyNew.get(i));
-				// }
-				List<BasicBlock> bbs = FlowUtils.getBasicBlockPartition(
-						bodyNew, name);
-				Map<Integer, CFNode> cf = FlowUtils.getControlFlowGraph(bbs);
-				Map<Integer, CFNode> cfFinal = FlowUtils.getControlFlowGraphWithReturn(cf);
-				// mtds.remove(name);
-				// System.out.println("Now sleep: 2000ms");
-				// Thread.sleep(2000);
-				cfMap.put(name, cfFinal);
-//				cfMap.put(name, cf);
-			}
+			System.out.println("Getting cfg...");
+			List<String> body = mtds.get(mtdName);
+			body = FlowUtils.removeBlankLines(body);
+			FlowUtils.removePswitchDefinition(body);
+			List<BasicBlock> bbs = FlowUtils.getBasicBlockPartition(body,
+					mtdName);
+			cfcf = FlowUtils.getControlFlowGraph(bbs);
+			cfcf = FlowUtils.getControlFlowGraphWithReturn(cfcf);
 
 			end = System.currentTimeMillis();
 
 			System.out.println("Costs: " + (end - start) + " ms");
-			System.out.println(cfMap.get(-1));
-			Thread.sleep(2000);
+			System.out.println("Now sleep 3s");
+			Thread.sleep(3000);
 
-			List<String> cfList = new ArrayList<>();
+			start = System.currentTimeMillis();
+			System.out.println("Getting top levels ...");
+			List<Object[]> allMnObj = DroidActDBUtils.getMethodsNames(conn,
+					null, md5);
+			List<String> allNames = DroidActDBUtils.convertObjListToStrList(
+					allMnObj, 0);
+			Map<String, TopLevelMtd> allTopLvs = ApiUtils
+					.getTopLevelMtdsWithApi(conn, md5, allNames);
+
+			System.out.println("Start simplifying");
+			cfcf = FlowUtils.cfSimplify(cfcf, allTopLvs, mtdName);
+			end = System.currentTimeMillis();
+			System.out.println("complete in " + (end - start) + "ms, waiting 5s for results ...");
+			Thread.sleep(5000);
+			System.out.println("Here for results:");
 			
-			for (Map.Entry<String, Map<Integer, CFNode>> entry : cfMap
-					.entrySet()) {
-				String name = entry.getKey();
-				System.out.println("======================== name: "
-						+ name + " ========================");
-				cfList.add("======================== name: "
-						+ name + " ========================");
-				Map<Integer, CFNode> cf = entry.getValue();
-				for (Map.Entry<Integer, CFNode> mEntry : cf.entrySet()) {
-					System.out.println("I'm here!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-					System.out.println("-------------- node start --------------");
-					cfList.add("-------------- node start --------------");
-					
-					int k = mEntry.getKey();
-					
-					if (k == -1) {
-						continue;
-					}
-					
-					CFNode v = mEntry.getValue();
-					System.out.println("k=" + k + ", v is null? " + v == null);
-					System.out.println("Node_" + k);
-					cfList.add("Node_" + k);
-					System.out.println(v);
-					cfList.add(v.toString());
-					System.out.println("-------------- node end --------------");
-					cfList.add("-------------- node end --------------");
-				}
-				
-				System.out.println("=======++=======++=======++=======++=======");
-				cfList.add("=======++=======++=======++=======++=======");
+			for (Map.Entry<Integer, CFNode> e : cfcf.entrySet()) {
+				System.out.println("[[node: " + e.getKey() + "]]");
+				System.out.println(e.getValue());
 			}
-			
-//			FileUtils.writeLines(new File("cfresult.txt"), "UTF-8", cfList, null, false);
-			
+
+			// List<String> cfList = new ArrayList<>();
+
+			// FileUtils.writeLines(new File("cfresult.txt"), "UTF-8", cfList,
+			// null, false);
+
 		}
 	}
 }

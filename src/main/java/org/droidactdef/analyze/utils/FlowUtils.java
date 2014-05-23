@@ -5,8 +5,10 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.droidactdef.analyze.commons.ApiConst;
 import org.droidactdef.analyze.domains.*;
 import org.droidactdef.commons.C;
+import org.droidactdef.utils.RegexUtils;
 
 /**
  * 处理流的工具类<br />
@@ -24,6 +26,56 @@ public class FlowUtils {
 	 * *********************************************************
 	 * 控制流获取
 	 */
+	/**
+	 * 简化控制流图，使用API代替其中的方法体<br />
+	 * 
+	 * @param cfg
+	 *            <nodeId, node{nodeId, prev, next, bb{blockId, mtdName, ...,
+	 *            blockBody}}>
+	 * @param topLevels
+	 *            <topLevelName, topLevel{name, ..., apis, nonApis}>
+	 * @return
+	 */
+	public static Map<Integer, CFNode> cfSimplify(Map<Integer, CFNode> cfg,
+			Map<String, TopLevelMtd> topLevels, String mtdName) {
+		TopLevelMtd tlm = topLevels.get(mtdName);
+		Map<String, HashSet<String>> tlmNonApis = tlm.getNonApiMtdApis();
+		Map<Integer, CFNode> simCfg = new HashMap<>();
+		for (Map.Entry<Integer, CFNode> entry : cfg.entrySet()) {
+			Integer nodeId = entry.getKey();
+			// 节点
+			CFNode node = entry.getValue();
+
+			// 基本块
+			BasicBlock bb = node.getBb();
+			List<String> bodyNew = new ArrayList<>();
+			List<String> bodyOld = bb.getBlockBody();
+			for (String line : bodyOld) {
+				String found = RegexUtils.findStringFromLineByRegex(line,
+						ApiConst.REGEX_ANDROID_API);
+				if (ApiUtils.isStrNullEmpty(found)) {
+					found = RegexUtils.findStringFromLineByRegex(line,
+							C.PTN_METHOD);
+					if (ApiUtils.isStrNullEmpty(found)) {
+						;
+					} else if (tlmNonApis.containsKey(found)) {
+						HashSet<String> apis = tlmNonApis.get(found);
+						bodyNew.addAll(apis);
+					}
+				} else {
+					bodyNew.add(found);
+				}
+			}
+			
+			bb.setBlockBody(bodyNew);
+			node.setBb(bb);
+			simCfg.put(nodeId, node);
+
+		}
+
+		return simCfg;
+	}
+
 	/**
 	 * 整理CF将CF的终点的后继节点修改为-1<br />
 	 * 
@@ -444,7 +496,8 @@ public class FlowUtils {
 		String returnWide = findStringFromLineByRegex(line, C.PTN_RETURN_WIDE);
 		if (returnWide == null || returnWide.equals(""))
 			return false;
-		else return true;
+		else
+			return true;
 	}
 
 	/**

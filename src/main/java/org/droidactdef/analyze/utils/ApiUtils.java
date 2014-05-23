@@ -34,6 +34,7 @@ public class ApiUtils {
 	 * 1. 顶层方法名及其调用的所有API<br />
 	 * 2. 顶层方法名的下第一级方法名及其调用的所有API<br />
 	 * 为控制流分析专门改进的获取顶层方法的方法<br />
+	 * 数据流分析也可用<br />
 	 * 
 	 * @param conn
 	 * @param md5
@@ -443,7 +444,7 @@ public class ApiUtils {
 		return lines;
 	}
 
-	private static boolean isStrNullEmpty(String str) {
+	public static boolean isStrNullEmpty(String str) {
 		return str == null || str.equals("");
 	}
 }
