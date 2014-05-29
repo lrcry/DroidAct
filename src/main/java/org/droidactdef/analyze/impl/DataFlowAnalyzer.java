@@ -1,9 +1,11 @@
 package org.droidactdef.analyze.impl;
 
+import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
 import org.droidactdef.analyze.SmaliFlowAnalyzer;
+import org.droidactdef.analyze.domains.Flow;
 import org.droidactdef.domains.FlowNode;
 
 /**
@@ -29,7 +31,8 @@ public class DataFlowAnalyzer implements SmaliFlowAnalyzer {
 	}
 
 	@Override
-	public Map<Integer, List<FlowNode>> getFlow(List<String> lines, Map<String, Boolean> genMap) {
+	public Map<String, Flow> getFlow(Connection conn, String md5)
+			throws Exception {
 		// TODO Auto-generated method stub
 		return null;
 	}

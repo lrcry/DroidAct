@@ -42,24 +42,27 @@ public class ApiUtils {
 	 *            当前APK的所有方法名
 	 * @return
 	 * @throws SQLException
-	 * @throws InterruptedException
 	 */
 	public static Map<String, TopLevelMtd> getTopLevelMtdsWithApi(
 			Connection conn, String md5, List<String> allMtdNames)
-			throws SQLException, InterruptedException {
+			throws SQLException {
 		// 获取所有顶层方法
+		System.out.println("Start getting all TLMs...");
 		List<Object[]> tlMtdList = DroidActDBUtils
 				.getAllTopLevelMtds(conn, md5);
 		Map<String, TopLevelMtd> topLevelMap = getTopLvMtdMap(tlMtdList);
 		// <name, {name, superclass, interface, body, apis}>
 		System.out.println("get top level over");
 
+		System.out.println("============Start iterate============");
 		// Iterate topLevelMap
 		Iterator<String> tlMapIt = topLevelMap.keySet().iterator();
+		
+		
 		while (tlMapIt.hasNext()) {
-
+			
 			String name = tlMapIt.next();
-			// System.out.println(name);
+			 System.out.println("[ITERATE] " + name);
 			TopLevelMtd tlm = topLevelMap.get(name);
 			final List<String> body = tlm.getBody();
 			HashSet<String> apis = new HashSet<>();
@@ -67,6 +70,7 @@ public class ApiUtils {
 
 			// Iterate body lines， 为了迭代出顶层方法的下一层方法
 			// 内层第一次迭代,将当前顶层方法 直接调用的API 和其下层方法(非API)迭代出来
+			System.out.println("Iterate 1");
 			for (String line : body) {
 				String found = RegexUtils.findStringFromLineByRegex(line,
 						ApiConst.REGEX_ANDROID_API);
@@ -88,6 +92,7 @@ public class ApiUtils {
 			// 内层第二次迭代,将TLM次级方法调用的所有方法筛选出来
 			Iterator<String> lvSecIter = lvSecond.keySet().iterator();
 			Map<String, HashSet<String>> lvSecUpdate = new HashMap<>();
+			System.out.println("Iterate 2");
 			while (lvSecIter.hasNext()) {
 				String lvSecName = lvSecIter.next();
 				List<String> lvSecBody = DroidActDBUtils.getBodyByMethodName(
@@ -119,7 +124,8 @@ public class ApiUtils {
 			// }
 
 			// System.out.println("Start 3rd iteration");
-			// TODO 内层第三次迭代，迭代lvSecond集合，获取其所有方法 存在问题，获取API不全，死循环
+			// 内层第三次迭代，迭代lvSecond集合，获取其所有方法
+			System.out.println("Iterate 3");
 			Map<String, HashSet<String>> lvSecUpdThird = new HashMap<>();
 			f: for (Map.Entry<String, HashSet<String>> e : lvSecond.entrySet()) {
 
@@ -129,6 +135,7 @@ public class ApiUtils {
 					continue f;
 
 				w: while (true) {
+					System.out.println("Died???????????????????");
 					// 否则，先筛选lvSecHashSet中在下一轮迭代需要去除的方法（非API方法）
 					HashSet<String> setForRmv = new HashSet<>();
 					for (String mtd : lvSecHashSet) {
@@ -152,7 +159,7 @@ public class ApiUtils {
 
 					for (Object[] lower : lowers) {
 						String lowerName = (String) lower[1];
-						System.out.println(lowerName);
+//						System.out.println(lowerName);
 						List<String> lowerBody = stringToLines((String) lower[6]);
 						for (String line : lowerBody) {
 							String found = RegexUtils
@@ -176,7 +183,7 @@ public class ApiUtils {
 					// Thread.sleep(5000);
 				}
 
-				System.out.println("【】更新LVSECOND");
+//				System.out.println("【】更新LVSECOND");
 				// 更新lvSecond
 				lvSecUpdThird.put(lvSecName, lvSecHashSet);
 			}

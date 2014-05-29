@@ -75,11 +75,6 @@ public class TestFlowUtilsEfficiency {
 				System.out.println(e.getValue());
 			}
 
-			// List<String> cfList = new ArrayList<>();
-
-			// FileUtils.writeLines(new File("cfresult.txt"), "UTF-8", cfList,
-			// null, false);
-
 		}
 	}
 }

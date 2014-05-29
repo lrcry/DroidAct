@@ -207,8 +207,7 @@ public class DroidActDBUtils {
 		Map<String, List<String>> mtdsBodies = new HashMap<>();
 
 		String sql = sqlBuilder("select", "da_methods", "mtd_name, mtd_body",
-				2, "where mtd_src_apk_crc32='" + crc32
-						+ "' and mtd_src_apk_md5='" + md5 + "'");
+				2, "where mtd_src_apk_md5='" + md5 + "'");
 		List<Object[]> results = runner.query(conn, sql, handler);
 
 		for (Object[] result : results) {
@@ -595,6 +594,7 @@ public class DroidActDBUtils {
 				params[apiArrCnt] = (Object[]) arr;
 				// System.out.println(apiArrCnt);
 				apiArrCnt++;
+				System.out.println(arr[0]);
 			}
 		}
 

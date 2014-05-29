@@ -58,7 +58,9 @@ public class ApkResParsingUtils {
 			String apkName = apk.getName();
 			apkFileInfo.put("apk.name", apkName);
 			String crc32 = getCrc32FromStream(in);
+			in = new FileInputStream(apk);
 			String md5 = getMdFromStream(in, "MD5");
+			in = new FileInputStream(apk);
 			String sha1 = getMdFromStream(in, "SHA1");
 			apkFileInfo.put("apk.crc32", crc32);
 			apkFileInfo.put("apk.md5", md5);
@@ -205,13 +207,15 @@ public class ApkResParsingUtils {
 						colCount);
 				runner.batch(conn, sql, params);
 				methods.clear();
-				System.out.println("write maxline");
+//				System.out.println("write maxline");
 			}
-			System.out.println("file executed");
+//			System.out.println("file executed");
 			// 之后再向集合中写新的
 			List<String> temp = new ArrayList<>();
 			temp = getMethodFromClass(file, srcApkName, srcApkCrc32, srcApkMd5,
 					srcApkSha1);
+			
+//			System.out.println(temp);
 			methods.addAll(temp);
 		}
 
@@ -236,7 +240,7 @@ public class ApkResParsingUtils {
 	public static List<String> getMethodFromClass(File smaliFile,
 			String srcApkName, String srcApkCrc32, String srcApkMd5,
 			String srcApkSha1) throws IOException {
-		System.out.println("getMethodFromClass");
+//		System.out.println("getMethodFromClass");
 		List<String> lines = FileUtils.readLines(smaliFile, C.FILE_ENCODING);
 		Map<String, String> clazzInfo = SmaliUtils.getSmaliClazzInfo(lines);
 		List<String> smaliMethods = new ArrayList<>();

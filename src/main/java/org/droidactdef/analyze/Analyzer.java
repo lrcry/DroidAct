@@ -7,8 +7,5 @@ package org.droidactdef.analyze;
  * 
  */
 public interface Analyzer {
-	/**
-	 * 分析<br />
-	 */
 	public void analyze(Object...params);
 }

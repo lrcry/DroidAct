@@ -7,5 +7,14 @@ package org.droidactdef.domains;
  * 
  */
 public class FlowNode {
+	private int nodeId;
 
+	public int getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(int nodeId) {
+		this.nodeId = nodeId;
+	}
+	
 }

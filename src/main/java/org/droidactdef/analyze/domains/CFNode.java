@@ -3,6 +3,7 @@ package org.droidactdef.analyze.domains;
 import java.util.*;
 
 import org.droidactdef.commons.C;
+import org.droidactdef.domains.FlowNode;
 
 /**
  * 基于基本块的控制流节点<br />
@@ -10,8 +11,8 @@ import org.droidactdef.commons.C;
  * @author range
  * 
  */
-public class CFNode {
-	private int nodeId;
+public class CFNode extends FlowNode {
+//	private int nodeId;
 
 	private List<Integer> prev;
 
@@ -43,17 +44,17 @@ public class CFNode {
 		this.bb = bb;
 	}
 
-	public int getNodeId() {
-		return nodeId;
-	}
+//	public int getNodeId() {
+//		return nodeId;
+//	}
 
-	public void setNodeId(int nodeId) {
-		this.nodeId = nodeId;
-	}
+//	public void setNodeId(int nodeId) {
+//		this.nodeId = nodeId;
+//	}
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder("CFNode_");
-		sb.append(this.nodeId).append(C.CRLF);
+		sb.append(super.getNodeId()).append(C.CRLF);
 		sb.append("Prev:").append(C.CRLF);
 		for (int i : this.prev) {
 			sb.append(i).append(" ");

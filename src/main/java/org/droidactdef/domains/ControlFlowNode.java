@@ -4,8 +4,9 @@ package org.droidactdef.domains;
  * 控制流节点的数据定义<br />
  * 
  * @author range
- * 
+ * @Deprecated see analyze.domains.CFNode, domains.FlowNode, analyze.domains.DFNode
  */
+@Deprecated
 public class ControlFlowNode extends FlowNode {
 	private int nodeId;
 	

@@ -1,7 +1,10 @@
 package org.droidactdef.analyze;
 
+import java.sql.Connection;
 import java.util.*;
 
+import org.droidactdef.analyze.domains.Flow;
+import org.droidactdef.analyze.domains.TopLevelMtd;
 import org.droidactdef.domains.FlowNode;
 
 /**
@@ -14,9 +17,10 @@ public interface SmaliFlowAnalyzer extends Analyzer {
 	/**
 	 * 获取流<br />
 	 * 
-	 * @param lines
-	 *            方法body行集合
-	 * @return 流
+	 * @param conn
+	 * @param md5
+	 * @param mtdName
+	 * @return
 	 */
-	public Map<Integer, List<FlowNode>> getFlow(List<String> lines, Map<String, Boolean> genMap);
+	public Map<String, Flow> getFlow(Connection conn, String md5, Map<String, TopLevelMtd> topLevels) throws Exception;
 }
